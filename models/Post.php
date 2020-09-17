@@ -3,27 +3,33 @@ require_once UTILS_DIR . '/DBUtil.php';
 
 class Post extends DBUtil
 {
-
+    protected $table = 'posts';
     protected $fields = [
         'id' => [
+            'col' => 'id',
             'type' => 'integer',
         ],
-        'user_id' => [
+        'userId' => [
+            'col' => 'user_id',
             'type' => 'integer',
             'required' => true,
         ],
         'title' => [
+            'col' => 'title',
             'type' => 'string',
             'required' => true,
         ],
         'body' => [
+            'col' => 'body',
             'type' => 'string',
             'required' => true,
         ],
-        'updated_at' => [
+        'updatedAt' => [
+            'col' => 'updated_at',
             'type' => 'date',
         ],
-        'created_at' => [
+        'createdAt' => [
+            'col' => 'created_at',
             'type' => 'date',
         ],
     ];
@@ -31,6 +37,28 @@ class Post extends DBUtil
     public function __construct($db_config)
     {
         parent::__construct($db_config);
+    }
+
+    public function insert_batch($data)
+    {
+        $ret = ['inserted' => 0, 'error' => ''];
+        $pdo = $this->pdo;
+        $tbl = $this->table;
+        $sql = "INSERT INTO $tbl (id,user_id,title,body) VALUES (:id,:userId,:title,:body)";
+        $stmt = $pdo->prepare($sql);
+        try {
+            $pdo->beginTransaction();
+            foreach ($data as $row) {
+                $row = $this->filter_fields($row);
+                $stmt->execute($row);
+            }
+            $pdo->commit();
+            $ret['inserted'] = count($data);
+        } catch (Throwable $e) {
+            $pdo->rollback();
+            return $this->exception($e);
+        }
+        return $ret;
     }
 
     public function search_by_id(int $post_id)

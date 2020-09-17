@@ -3,7 +3,7 @@ require_once UTILS_DIR . '/DBUtil.php';
 
 class User extends DBUtil
 {
-
+    protected $table = 'users';
     protected $fields = [
         'id' => [
             'type' => 'integer',
@@ -16,10 +16,10 @@ class User extends DBUtil
             'type' => 'string',
             'required' => true,
         ],
-        'updated_at' => [
+        'updatedAt' => [
             'type' => 'date',
         ],
-        'created_at' => [
+        'createdAt' => [
             'type' => 'date',
         ],
     ];
@@ -27,6 +27,29 @@ class User extends DBUtil
     public function __construct($db_config)
     {
         parent::__construct($db_config);
+    }
+
+
+    public function insert_batch($data)
+    {
+        $ret = ['inserted' => 0, 'error' => ''];
+        $pdo = $this->pdo;
+        $tbl = $this->table;
+        $sql = "INSERT INTO $tbl (id,name,email) VALUES (:id,:name,:email)";
+        $stmt = $pdo->prepare($sql);
+        try {
+            $pdo->beginTransaction();
+            foreach ($data as $row) {
+                $row = $this->filter_fields($row);
+                $stmt->execute($row);
+            }
+            $pdo->commit();
+            $ret['inserted'] = count($data);
+        } catch (Throwable $e) {
+            $pdo->rollback();
+            return $this->exception($e);
+        }
+        return $ret;
     }
 
     public function create($user)

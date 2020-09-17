@@ -9,6 +9,10 @@ class DBUtil
 		'pass' => '',
 	];
 	protected $pdo;
+
+	protected $table = '';
+	protected $fields = [];
+
 	public $debug = false;
 
 	/**
@@ -24,24 +28,47 @@ class DBUtil
 			$this->config = $cfg = array_merge($this->config, $config);
 
 			try {
-				$this->pdo = new PDO("mysql:host=$cfg[host];dbname=$cfg[dbname]", $cfg['user'], $cfg['pass'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
-				$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-				$this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+				$this->pdo = self::PDO($cfg);
 			} catch (PDOException $e) {
-				$this->pdo_exception($e);
+				$this->exception($e);
 			}
 		} else {
 			throw new Exception('Invalid config array!');
 		}
 	}
 
-	protected function pdo_exception($e)
+	public static function PDO($cfg)
 	{
-		return ['error' => ($this->debug) ? $e->getMessage() : 'DB Error.'];
+		$pdo = new PDO("mysql:host=$cfg[host];dbname=$cfg[dbname]", $cfg['user'], $cfg['pass'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+		$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+		return $pdo;
+	}
+
+	protected function exception($e)
+	{
+		$err = 'Error';
+		if ($e instanceof PDOException) {
+			$err = 'DB Error';
+		}
+
+		if ($this->debug) {
+			$err = $e->getMessage();
+		}
+		return ['error' => $err];
 	}
 
 	public function getConnection()
 	{
 		return $this->pdo;
+	}
+
+	public function filter_fields(array $data)
+	{
+		return array_filter(
+			$data,
+			fn ($k) => isset($this->fields[$k]),
+			ARRAY_FILTER_USE_KEY
+		);
 	}
 }

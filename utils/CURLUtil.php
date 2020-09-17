@@ -4,16 +4,11 @@ class CURLUtil
 {
 	public $debug = false;
 
-	public function get_content(array $opts)
+	public function get_content(string $url)
 	{
-		$defaults = [
-			CURLOPT_URL            => '',
-			CURLOPT_RETURNTRANSFER => true
-		];
-		$opts = array_merge($defaults, $opts);
-
 		$ch = curl_init();
-		curl_setopt_array($ch, $opts);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 		$result = curl_exec($ch);
 		$error = curl_error($ch);

@@ -268,16 +268,7 @@ class FormCmp extends UIComponent {
 	}
 }
 
-
-$(function () {
-
-	$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
-		format: 'DD/MM/YYYY',
-	});
-
-	const salesAjaxURL = 'pages/sales/ajax.php';
-
-	const $body = $('body');
+function initLoadingInd($body) {
 	$body.find('.loading-wrap').append(`
 		<div class="loading">
 			<div class="loading-overlay d-flex justify-content-center align-items-center">
@@ -285,20 +276,80 @@ $(function () {
 			</div>
 		</div>
 	`);
+}
 
-	const componentsConfig = [
-		{ view: 'salesmen', ctor: Salesmen, ajaxURL: salesAjaxURL },
-		{ view: 'report', ctor: Report, ajaxURL: salesAjaxURL },
-		//{ view: 'form', ctor: FormCmp, ajaxURL: '' },
-	];
-	const cmpInstances = [];
-
-	for (const cfg of componentsConfig) {
-		$body.find(`[data-view="${cfg.view}"]`).each(function () {
-			const cmp = new cfg.ctor($(this), cfg.ajaxURL);
-			cmp.init();
-			cmpInstances.push(cmp);
-		});
+function loadingInd($el, done = false, animDur = 50) {
+	const $loading = $el.find('.loading');
+	if (done) {
+		$loading.fadeOut(animDur);
+	} else {
+		$loading.fadeIn(animDur);
 	}
+}
+
+function ajaxError(err) {
+	console.error(err);
+	alert(err.message);
+}
+
+function ajaxFail() {
+	alert('Server error!');
+}
+
+$(function () {
+
+	const ajaxURL = 'api/';
+	const loadingFadeInDur = 50;
+	const loadingFadeOutDur = 200;
+
+	const $body = $('body');
+	initLoadingInd($body);
+
+	//--- posts ---//
+	const $postsContent = $body.find('#postsContent');
+	$body.find('[data-action="fetch-posts"]').click(function () {
+		loadingInd($postsContent);
+		fetchPosts(ajaxURL);
+	});
+
+	function fetchPosts(ajaxURL) {
+		const req = {
+			method: 'fetch_remote_data',
+		};
+		$.get(
+			ajaxURL,
+			req,
+			res => fetchPostsSuccess(res),
+			'json'
+		).fail(() => ajaxFail())
+			.always(() => {
+				loadingInd($postsContent, true, loadingFadeOutDur);
+			});
+	}
+
+	function fetchPostsSuccess(res) {
+		if (res.status != 'OK') {
+			ajaxError(res);
+		} else {
+
+		}
+	}
+	//--- /posts ---//
+
+
+	// const componentsConfig = [
+	// 	{ view: 'salesmen', ctor: Salesmen, ajaxURL: salesAjaxURL },
+	// 	{ view: 'report', ctor: Report, ajaxURL: salesAjaxURL },
+	// 	//{ view: 'form', ctor: FormCmp, ajaxURL: '' },
+	// ];
+	// const cmpInstances = [];
+
+	// for (const cfg of componentsConfig) {
+	// 	$body.find(`[data-view="${cfg.view}"]`).each(function () {
+	// 		const cmp = new cfg.ctor($(this), cfg.ajaxURL);
+	// 		cmp.init();
+	// 		cmpInstances.push(cmp);
+	// 	});
+	// }
 
 });
