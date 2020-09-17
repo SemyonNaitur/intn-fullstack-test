@@ -5,12 +5,13 @@ require_once UTILS_DIR . '/helper.php';
 $page = (empty($_GET['page'])) ? 'create-post' : $_GET['page'];
 
 include TEMPLATE_DIR . '/header.php';
-switch ($page) {
-    case 'sales':
-        include PAGES_DIR . "/$page/index.php";
-        break;
-    default:
-        http_response_code(404);
-        echo 'Page not found';
+
+$index_file = PAGES_DIR . "/$page/index.php";
+if (file_exists($index_file)) {
+    include $index_file;
+} else {
+    http_response_code(404);
+    echo '<h3>Page not found</h3>';
 }
+
 include TEMPLATE_DIR . '/footer.php';
