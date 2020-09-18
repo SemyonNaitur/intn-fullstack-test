@@ -1,5 +1,6 @@
 <?php
 require_once UTILS_DIR . '/DBUtil.php';
+require_once UTILS_DIR . '/Validator.php';
 
 class User extends DBUtil
 {
@@ -29,7 +30,6 @@ class User extends DBUtil
         parent::__construct($db_config);
     }
 
-
     public function insert_batch($data)
     {
         $ret = ['inserted' => 0, 'error' => ''];
@@ -52,27 +52,27 @@ class User extends DBUtil
         return $ret;
     }
 
-    public function create($user)
+    public function create(array $record)
     {
-        $ret = ['user' => null, 'error' => ''];
+        $ret = ['record' => null, 'error' => ''];
         $pdo = $this->pdo;
         $tbl = $this->table;
 
-        $user = $this->filter_fields($user, ['name', 'email']);
+        $record = $this->filter_fields($record, ['name', 'email']);
         $rules = [
             'name' => 'required|string',
             'email' => 'required|string',
         ];
-        if (($valid = $this->validate($user, $rules)) !== true) {
+        if (($valid = Validator::validate($record, $rules)) !== true) {
             $ret['error'] = 'Validation failed.';
             $ret['error_bag'] = $valid;
         } else {
             $sql = "INSERT INTO $tbl (name,email) VALUES (:name,:email)";
             try {
                 $stmt = $pdo->prepare($sql);
-                $stmt->execute($user);
-                $user['id'] = $pdo->lastInsertId();
-                $ret['user'] = $user;
+                $stmt->execute($record);
+                $record['id'] = $pdo->lastInsertId();
+                $ret['record'] = $record;
             } catch (Throwable $e) {
                 return $this->exception($e);
             }

@@ -1,5 +1,6 @@
 <?php
 require_once UTILS_DIR . '/DBUtil.php';
+require_once UTILS_DIR . '/Validator.php';
 
 class Post extends DBUtil
 {
@@ -61,7 +62,7 @@ class Post extends DBUtil
         return $ret;
     }
 
-    public function search_by_id(int $post_id)
+    public function search_by_id(int $id)
     {
     }
 
@@ -73,7 +74,32 @@ class Post extends DBUtil
     {
     }
 
-    public function create($post)
+    public function create(array $record)
     {
+        $ret = ['record' => null, 'error' => ''];
+        $pdo = $this->pdo;
+        $tbl = $this->table;
+
+        $record = $this->filter_fields($record, ['userId', 'title', 'body']);
+        $rules = [
+            'userId' => 'required|integer',
+            'title' => 'required',
+            'body' => 'required',
+        ];
+        if (($valid = Validator::validate($record, $rules)) !== true) {
+            $ret['error'] = 'Validation failed.';
+            $ret['error_bag'] = $valid;
+        } else {
+            $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($record);
+                $record['id'] = $pdo->lastInsertId();
+                $ret['record'] = $record;
+            } catch (Throwable $e) {
+                return $this->exception($e);
+            }
+        }
+        return $ret;
     }
 }

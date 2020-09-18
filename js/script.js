@@ -309,8 +309,30 @@ $(function () {
 	const $postsContent = $body.find('#postsContent');
 	$body.find('[data-action="fetch-data"]').click(function () {
 		loadingInd($postsContent);
-		fetchData(ajaxURL);
+		createUser(ajaxURL);
+		// fetchData(ajaxURL);
 	});
+
+	function createUser(ajaxURL) {
+		const req = {
+			method: 'create_user',
+			params: {
+				user: {
+					name: "Semyon",
+					email: ""
+				}
+			}
+		};
+		$.post(
+			ajaxURL,
+			req,
+			res => (res),
+			'json'
+		).fail(() => ajaxFail())
+			.always(() => {
+				loadingInd($postsContent, true, loadingFadeOutDur);
+			});
+	}
 
 	function fetchData(ajaxURL) {
 		const req = {

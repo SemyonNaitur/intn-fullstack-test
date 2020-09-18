@@ -1,5 +1,4 @@
 <?php
-require_once 'Validator.php';
 
 class DBUtil
 {
@@ -46,39 +45,19 @@ class DBUtil
 		return $pdo;
 	}
 
-	public static function validate(array $row, array $rules)
+	public function beginTransaction()
 	{
-		$errors = [];
-		$row_valid = true;
-		foreach ($rules as $fld_name => $fld_rules) {
-			$fld_rules = (is_array($fld_rules)) ? $fld_rules : explode('|', $fld_rules);
-			$val = $row[$fld_name] ?? null;
-			$errors[$fld_name] = [];
+		$this->pdo->beginTransaction();
+	}
 
-			if (in_array('required', $fld_rules)) {
-				if ($val === null) {
-					$errors[$fld_name][] = 'Required field';
-					$row_valid = false;
-					continue;
-				}
-			}
+	public function commit()
+	{
+		$this->pdo->commit();
+	}
 
-			foreach ($fld_rules as $rule) {
-				$func = trim($rule) . '_rule';
-				if ($func == 'required_rule') continue;
-
-				if (!method_exists('Validator', $func)) {
-					throw new Exception("Invalid rule: $rule");
-				}
-
-				if (($valid = Validator::$func($val)) !== true) {
-					$errors[$fld_name][] = $valid;
-					$row_valid = false;
-				}
-			}
-		}
-
-		return $row_valid ?: $errors;
+	public function rollback()
+	{
+		$this->pdo->rollback();
 	}
 
 	protected function exception($e)
@@ -99,11 +78,11 @@ class DBUtil
 		return $this->pdo;
 	}
 
-	public function filter_fields(array $row, array $allowed = null)
+	public function filter_fields(array $record, array $allowed = null)
 	{
 		$allowed ??= array_keys($this->fields);
 		return array_filter(
-			$row,
+			$record,
 			fn ($k) => in_array($k, $allowed),
 			ARRAY_FILTER_USE_KEY
 		);
