@@ -14,7 +14,7 @@
             <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#postsAccordion">
                 <div class="card-body">
                     <div class="form-inline">
-                        <button class="btn btn-primary mb-2" data-action="fetch-posts">Fetch</button>
+                        <button class="btn btn-primary mb-2" data-action="fetch-data">Fetch</button>
                     </div>
                 </div>
             </div>

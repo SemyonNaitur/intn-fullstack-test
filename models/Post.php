@@ -45,8 +45,8 @@ class Post extends DBUtil
         $pdo = $this->pdo;
         $tbl = $this->table;
         $sql = "INSERT INTO $tbl (id,user_id,title,body) VALUES (:id,:userId,:title,:body)";
-        $stmt = $pdo->prepare($sql);
         try {
+            $stmt = $pdo->prepare($sql);
             $pdo->beginTransaction();
             foreach ($data as $row) {
                 $row = $this->filter_fields($row);

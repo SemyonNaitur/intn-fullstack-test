@@ -33,7 +33,7 @@ abstract class AjaxUtil
                 $this->response->status = 'UNSUPORTED_METHOD';
                 $this->response->message = "Unsuported method: $method.";
             } else {
-                $this->$method($this->input, $this->response);
+                $this->$method($this->input['params'], $this->response);
             }
         }
         $this->output();

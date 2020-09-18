@@ -18,7 +18,7 @@ class BlogAjax extends AjaxUtil
 
 	//--- API methods ---//
 
-	public function fetch_remote_data($input, AjaxResponse $resp)
+	public function fetch_remote_data($params, AjaxResponse $resp)
 	{
 		$url = $this->data_url;
 
@@ -43,6 +43,17 @@ class BlogAjax extends AjaxUtil
 			} else {
 				$resp->data['inserted_posts'] = $res['inserted'];
 			}
+		}
+	}
+
+	public function create_user($params, AjaxResponse $resp)
+	{
+		$res = $this->user->create($params['user']);
+		if (!empty($res['error'])) {
+			$resp->status = 'FAIL';
+			$resp->message = $res['error'];
+		} else {
+			$resp->data['user'] = $res['user'];
 		}
 	}
 	//--- /API methods ---//

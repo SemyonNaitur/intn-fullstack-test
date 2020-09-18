@@ -307,19 +307,20 @@ $(function () {
 
 	//--- posts ---//
 	const $postsContent = $body.find('#postsContent');
-	$body.find('[data-action="fetch-posts"]').click(function () {
+	$body.find('[data-action="fetch-data"]').click(function () {
 		loadingInd($postsContent);
-		fetchPosts(ajaxURL);
+		fetchData(ajaxURL);
 	});
 
-	function fetchPosts(ajaxURL) {
+	function fetchData(ajaxURL) {
 		const req = {
 			method: 'fetch_remote_data',
+			params: {}
 		};
 		$.get(
 			ajaxURL,
 			req,
-			res => fetchPostsSuccess(res),
+			res => fetchDataSuccess(res),
 			'json'
 		).fail(() => ajaxFail())
 			.always(() => {
@@ -327,7 +328,7 @@ $(function () {
 			});
 	}
 
-	function fetchPostsSuccess(res) {
+	function fetchDataSuccess(res) {
 		if (res.status != 'OK') {
 			ajaxError(res);
 		} else {

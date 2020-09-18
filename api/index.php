@@ -15,7 +15,9 @@ try {
     $user = new User($pdo);
     $curl = new CURLUtil();
     $post->debug = $user->debug = $curl->debug = DEBUG;
-
+    echo 'REQUEST_METHOD: ' . $_SERVER['REQUEST_METHOD'];
+    print_r($_GET);
+    print_r($_POST);
     $input = ($_SERVER['REQUEST_METHOD'] == 'POST') ? $_POST : $_GET;
     $ajax = new BlogAjax($input, $post, $user, $curl);
     $ajax->run();
