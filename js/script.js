@@ -1,13 +1,13 @@
 class UIComponent {
-	ajaxURL;
+	apiEndpoint;
 	$viewContainer;
 	loadingFadeInDur = 50;
 	loadingFadeOutDur = 200;
 	loadingItems = new Set;
 
-	constructor($viewContainer, ajaxURL = '') {
+	constructor($viewContainer, apiEndpoint = '') {
 		this.$viewContainer = $viewContainer;
-		this.ajaxURL = ajaxURL;
+		this.apiEndpoint = apiEndpoint;
 	}
 
 	init() { }
@@ -82,7 +82,7 @@ class CreatePostFormCmp extends UIComponent {
 		};
 
 		$.post(
-			this.ajaxURL,
+			this.apiEndpoint,
 			req,
 			res => this.submitSuccess(res),
 			'json'
@@ -157,7 +157,7 @@ function ajaxFail() {
 
 $(function () {
 
-	const ajaxURL = 'api/';
+	const apiURL = 'api/';
 	const loadingFadeInDur = 50;
 	const loadingFadeOutDur = 200;
 
@@ -165,13 +165,13 @@ $(function () {
 	initLoadingInd($body);
 
 	const componentsConfig = [
-		{ view: 'create-post-form', ctor: CreatePostFormCmp, ajaxURL: ajaxURL },
+		{ view: 'create-post-form', ctor: CreatePostFormCmp, apiEndpoint: apiURL },
 	];
 	const cmpInstances = [];
 
 	for (const cfg of componentsConfig) {
 		$body.find(`[data-view="${cfg.view}"]`).each((i, el) => {
-			const cmp = new cfg.ctor($(this), cfg.ajaxURL);
+			const cmp = new cfg.ctor($(this), cfg.apiEndpoint);
 			cmp.init();
 			cmpInstances.push(cmp);
 		});
@@ -181,16 +181,16 @@ $(function () {
 	const $postsContent = $body.find('#postsContent');
 	$body.find('[data-action="fetch-data"]').click(() => {
 		loadingInd($postsContent);
-		fetchData(ajaxURL);
+		fetchData(apiURL);
 	});
 
-	function fetchData(ajaxURL) {
+	function fetchData(apiURL) {
 		const req = {
 			method: 'fetch_remote_data',
 			params: {}
 		};
 		$.get(
-			ajaxURL,
+			apiURL,
 			req,
 			res => fetchDataSuccess(res),
 			'json'

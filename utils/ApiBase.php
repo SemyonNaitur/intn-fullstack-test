@@ -1,6 +1,6 @@
 <?php
 
-class AjaxResponse
+class ApiResponse
 {
     public $data = null;
 
@@ -11,15 +11,15 @@ class AjaxResponse
     }
 }
 
-abstract class AjaxUtil
+abstract class ApiBase
 {
     protected array $input;
-    protected AjaxResponse $response;
+    protected ApiResponse $response;
 
     public function __construct(array $input)
     {
-        $this->input = (is_array($input)) ? $input : [];
-        $this->response = new AjaxResponse();
+        $this->input = $input;
+        $this->response = new ApiResponse();
     }
 
     public function run()
@@ -33,7 +33,7 @@ abstract class AjaxUtil
                 $this->response->status = 'UNSUPORTED_METHOD';
                 $this->response->message = "Unsuported method: $method.";
             } else {
-                $this->$method($this->input['params'], $this->response);
+                $this->$method($this->input['params'] ?? [], $this->response);
             }
         }
         $this->output();
@@ -44,17 +44,17 @@ abstract class AjaxUtil
         return $this->input;
     }
 
-    public function set_response(AjaxResponse $resp)
+    public function set_response(ApiResponse $resp)
     {
         $this->response = $resp;
     }
 
-    public function get_response(): AjaxResponse
+    public function get_response(): ApiResponse
     {
         return $this->response;
     }
 
-    protected function validation_fail(string $msg, array $error_bag, AjaxResponse $resp = null)
+    protected function validation_fail(string $msg, array $error_bag, ApiResponse $resp = null)
     {
         $resp ??= $this->response;
         $resp->status = 'VALIDATION_FAIL';

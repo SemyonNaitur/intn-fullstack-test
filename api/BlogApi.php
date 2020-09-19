@@ -1,7 +1,7 @@
 <?php
-require_once UTILS_DIR . '/AjaxUtil.php';
+require_once UTILS_DIR . '/ApiBase.php';
 
-class BlogAjax extends AjaxUtil
+class BlogApi extends ApiBase
 {
 	protected PDO $db;
 	protected CURLUtil $curl;
@@ -23,7 +23,7 @@ class BlogAjax extends AjaxUtil
 
 	//--- API methods ---//
 
-	public function fetch_remote_data(array $params, AjaxResponse $resp)
+	public function fetch_remote_data(array $params, ApiResponse $resp)
 	{
 		$url = $this->data_url;
 
@@ -51,7 +51,7 @@ class BlogAjax extends AjaxUtil
 		}
 	}
 
-	public function create_user(array $params, AjaxResponse $resp)
+	public function create_user(array $params, ApiResponse $resp)
 	{
 		$res = $this->user->create($params['user']);
 		if (isset($res['error_bag'])) {
@@ -64,7 +64,7 @@ class BlogAjax extends AjaxUtil
 		}
 	}
 
-	public function create_post(array $params, AjaxResponse $resp)
+	public function create_post(array $params, ApiResponse $resp)
 	{
 		$transaction = false;
 
