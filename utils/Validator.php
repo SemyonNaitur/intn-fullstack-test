@@ -50,6 +50,11 @@ class Validator
         return is_numeric($val) ?: 'Must be a number.';
     }
 
+    public static function integer_rule($val)
+    {
+        return ((int) $val == $val) ?: 'Must be an integer.';
+    }
+
     public static function email_rule($val)
     {
         return (bool) filter_var($val, FILTER_VALIDATE_EMAIL) ?: 'Invalid email address.';

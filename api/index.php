@@ -10,18 +10,14 @@ require_once MODELS_DIR . '/User.php';
 require_once 'BlogAjax.php';
 
 try {
-    $pdo = DBUtil::PDO(DB_CONFIG);
-    $post = new Post($pdo);
-    $user = new User($pdo);
-    $curl = new CURLUtil();
-    $post->debug = $user->debug = $curl->debug = DEBUG;
-
     $input = ($_SERVER['REQUEST_METHOD'] == 'POST') ? $_POST : $_GET;
-    $ajax = new BlogAjax($input, $post, $user, $curl);
+    $db = DBUtil::PDO(DB_CONFIG);
+    $curl = new CURLUtil();
+    $ajax = new BlogAjax($input, $db, $curl);
     $ajax->run();
 } catch (Throwable $e) {
     if (DEBUG) {
-        echo $e->getMessage;
+        throw $e;
     } else {
         http_response_code(500);
     }

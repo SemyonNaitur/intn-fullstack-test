@@ -13,8 +13,8 @@ class AjaxResponse
 
 abstract class AjaxUtil
 {
-    protected $input;
-    protected $response;
+    protected array $input;
+    protected AjaxResponse $response;
 
     public function __construct(array $input)
     {
@@ -39,14 +39,27 @@ abstract class AjaxUtil
         $this->output();
     }
 
-    public function get_input()
+    public function get_input(): array
     {
         return $this->input;
     }
 
-    public function get_response()
+    public function set_response(AjaxResponse $resp)
+    {
+        $this->response = $resp;
+    }
+
+    public function get_response(): AjaxResponse
     {
         return $this->response;
+    }
+
+    protected function validation_fail(string $msg, array $error_bag, AjaxResponse $resp = null)
+    {
+        $resp ??= $this->response;
+        $resp->status = 'VALIDATION_FAIL';
+        $resp->message = $msg;
+        $resp->data['errors'] = array_merge(($resp->data['errors'] ?? []), $error_bag);
     }
 
     protected function output()
