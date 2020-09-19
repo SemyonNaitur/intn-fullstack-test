@@ -42,11 +42,12 @@ class Post extends DBUtil
 
     public function insert_batch($data)
     {
-        $ret = ['inserted' => 0, 'error' => ''];
-        $pdo = $this->pdo;
-        $tbl = $this->table;
-        $sql = "INSERT INTO $tbl (id,user_id,title,body) VALUES (:id,:userId,:title,:body)";
         try {
+            $ret = ['inserted' => 0, 'error' => ''];
+            $pdo = $this->pdo;
+            $tbl = $this->table;
+
+            $sql = "INSERT INTO $tbl (id,user_id,title,body) VALUES (:id,:userId,:title,:body)";
             $stmt = $pdo->prepare($sql);
             $pdo->beginTransaction();
             foreach ($data as $row) {
@@ -55,51 +56,90 @@ class Post extends DBUtil
             }
             $pdo->commit();
             $ret['inserted'] = count($data);
-        } catch (Throwable $e) {
+            return $ret;
+        } catch (PDOException $e) {
             $pdo->rollback();
-            return $this->exception($e);
+            return $this->db_exception($e);
         }
-        return $ret;
     }
 
-    public function search_by_id(int $id)
+    public function search_by_id($id)
     {
+        try {
+            $ret = ['row' => null, 'error' => ''];
+            $pdo = $this->pdo;
+            $tbl = $this->table;
+
+            $sql = "SELECT * FROM $tbl WHERE id=? LIMIT 1";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$id]);
+            $ret['row'] = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $ret;
+        } catch (PDOException $e) {
+            return $this->db_exception($e);
+        }
     }
 
-    public function search_by_user_id(int $user_id)
+    public function search_by_user_id($user_id)
     {
+        try {
+            $ret = ['result' => null, 'error' => ''];
+            $pdo = $this->pdo;
+            $tbl = $this->table;
+
+            $sql = "SELECT * FROM $tbl WHERE user_id=?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$user_id]);
+            $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $ret;
+        } catch (PDOException $e) {
+            return $this->db_exception($e);
+        }
     }
 
-    public function search_by_content(string $search_term)
+    public function search_by_content($search)
     {
+        try {
+            $ret = ['result' => null, 'error' => ''];
+            $pdo = $this->pdo;
+            $tbl = $this->table;
+
+            $sql = "SELECT * FROM $tbl WHERE title LIKE :search OR body LIKE :search";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(['search' => "%$search%"]);
+            $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $ret;
+        } catch (PDOException $e) {
+            return $this->db_exception($e);
+        }
     }
 
     public function create(array $record)
     {
-        $ret = ['record' => null, 'error' => ''];
-        $pdo = $this->pdo;
-        $tbl = $this->table;
+        try {
+            $ret = ['record' => null, 'error' => ''];
+            $pdo = $this->pdo;
+            $tbl = $this->table;
 
-        $record = $this->filter_fields($record, ['userId', 'title', 'body']);
-        $rules = [
-            'userId' => 'required|integer',
-            'title' => 'required',
-            'body' => 'required',
-        ];
-        if (($valid = Validator::validate($record, $rules)) !== true) {
-            $ret['error'] = 'Validation failed.';
-            $ret['error_bag'] = $valid;
-        } else {
-            $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
-            try {
+            $record = $this->filter_fields($record, ['userId', 'title', 'body']);
+            $rules = [
+                'userId' => 'required|integer',
+                'title' => 'required',
+                'body' => 'required',
+            ];
+            if (($valid = Validator::validate($record, $rules)) !== true) {
+                $ret['error'] = 'Validation failed.';
+                $ret['error_bag'] = $valid;
+            } else {
+                $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute($record);
                 $record['id'] = $pdo->lastInsertId();
                 $ret['record'] = $record;
-            } catch (Throwable $e) {
-                return $this->exception($e);
             }
+            return $ret;
+        } catch (PDOException $e) {
+            return $this->db_exception($e);
         }
-        return $ret;
     }
 }

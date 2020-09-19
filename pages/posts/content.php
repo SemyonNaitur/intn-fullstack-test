@@ -1,24 +1,34 @@
 <div id="postsContent" class="container mt-5 loading-wrap">
 
-    <div class="accordion" id="postsAccordion">
+    <div class="card">
+        <div class="card-body">
 
-        <div class="card">
-            <div class="card-header" id="headingOne">
-                <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        Fetch Remote Data
-                    </button>
-                </h2>
-            </div>
-
-            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#postsAccordion">
-                <div class="card-body">
-                    <div class="form-inline">
-                        <button class="btn btn-primary mb-2" data-action="fetch-data">Fetch</button>
-                    </div>
+            <div class="form-inline mb-3">
+                <div class="form-group">
+                    <button class="btn btn-primary" data-action="fetch-data">Fetch Remote Data</button>
                 </div>
             </div>
-        </div>
 
+            <div class="form-inline">
+                <div class="form-group">
+                    <label>Search By</label>
+                </div>
+                <div class="form-group">
+                    <select class="form-control" data-input="search-by">
+                        <option value="id">id</option>
+                        <option value="user_id">user id</option>
+                        <option value="content">content</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" data-input="search-param">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" data-action="search">Search</button>
+                </div>
+            </div>
+
+        </div>
     </div>
+
 </div>

@@ -81,7 +81,7 @@ class CreatePostFormCmp extends UIComponent {
 			},
 		};
 
-		$.post(
+		$.get(
 			this.apiEndpoint,
 			req,
 			res => this.submitSuccess(res),
@@ -179,9 +179,17 @@ $(function () {
 
 	//--- posts ---//
 	const $postsContent = $body.find('#postsContent');
-	$body.find('[data-action="fetch-data"]').click(() => {
+
+	$postsContent.find('[data-action="fetch-data"]').click(() => {
 		loadingInd($postsContent);
 		fetchData(apiURL);
+	});
+
+	const $searchBy = $postsContent.find('[data-input="search-by"]');
+	const $searchParam = $postsContent.find('[data-input="search-param"]');
+	$postsContent.find('[data-action="search"]').click(() => {
+		const url = `posts-json.php?${$searchBy.val()}=${$searchParam.val()}`;
+		window.open(url, '_blank');
 	});
 
 	function fetchData(apiURL) {

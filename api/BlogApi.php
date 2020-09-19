@@ -1,9 +1,12 @@
 <?php
 require_once UTILS_DIR . '/ApiBase.php';
 
+require_once MODELS_DIR . '/Post.php';
+require_once MODELS_DIR . '/User.php';
+
 class BlogApi extends ApiBase
 {
-	protected PDO $db;
+	protected DBUtil $db;
 	protected CURLUtil $curl;
 
 	protected User $user;
@@ -11,13 +14,13 @@ class BlogApi extends ApiBase
 
 	protected $data_url = 'https://jsonplaceholder.typicode.com';
 
-	function __construct(array $input, PDO $db, CURLUtil $curl)
+	function __construct(array $input, DBUtil $db, CURLUtil $curl)
 	{
 		parent::__construct($input);
 		$this->db = $db;
 		$this->curl = $curl;
-		$this->user = new User($db);
-		$this->post = new Post($db);
+		$this->user = new User($db->get_connection());
+		$this->post = new Post($db->get_connection());
 		$this->post->debug = $this->user->debug = $this->curl->debug = DEBUG;
 	}
 
@@ -66,6 +69,7 @@ class BlogApi extends ApiBase
 
 	public function create_post(array $params, ApiResponse $resp)
 	{
+		$db = $this->db;
 		$transaction = false;
 
 		$user = $params['user'];
@@ -74,44 +78,59 @@ class BlogApi extends ApiBase
 		$post = $params['post'];
 		unset($post['id']);
 
-		if (!$user['id']) {
-			$this->db->beginTransaction();
-			$transaction = true;
-			$res = $this->user->create($user);
+		try {
+			if (!$user['id']) {
+				$db->begin_transaction();
+				$transaction = true;
+				$res = $this->user->create($user);
+				if (isset($res['error_bag'])) {
+					$this->validation_fail($res['error'], $res['error_bag']);
+				} elseif ($res['error']) {
+					$resp->status = 'ERR';
+					$resp->message = $res['error'];
+				} else {
+					$user = $res['record'];
+				}
+			}
+			$post['userId'] = $user['id'];
+
+			// Post::create is called even if User::create failed - for data validation.
+			$res = $this->post->create($post);
 			if (isset($res['error_bag'])) {
 				$this->validation_fail($res['error'], $res['error_bag']);
 			} elseif ($res['error']) {
 				$resp->status = 'ERR';
 				$resp->message = $res['error'];
 			} else {
-				$user = $res['record'];
+				$post = $res['record'];
+				$resp->data = [
+					'user' => $user,
+					'post' => $post
+				];
 			}
-		}
-		$post['userId'] = $user['id'];
 
-		// Post::create is called even if User::create failed - for data validation.
-		$res = $this->post->create($post);
-		if (isset($res['error_bag'])) {
-			$this->validation_fail($res['error'], $res['error_bag']);
-		} elseif ($res['error']) {
+			if (empty($post['id'])) {
+				if ($transaction) $db->rollback();
+			} else {
+				if ($transaction) $db->commit();
+				$resp->data = [
+					'user' => $user,
+					'post' => $post
+				];
+			}
+		} catch (PDOException $e) {
+			$db->db_exception($e);
+		}
+	}
+
+	public function posts_by_id(array $params, ApiResponse $resp)
+	{
+		$res = $this->post->search_by_id($params['id']);
+		if ($res['error']) {
 			$resp->status = 'ERR';
 			$resp->message = $res['error'];
 		} else {
-			$post = $res['record'];
-			$resp->data = [
-				'user' => $user,
-				'post' => $post
-			];
-		}
-
-		if (!$post['id']) {
-			$this->db->rollback();
-		} else {
-			$this->db->commit();
-			$resp->data = [
-				'user' => $user,
-				'post' => $post
-			];
+			$resp->data = $res['result'];
 		}
 	}
 	//--- /API methods ---//

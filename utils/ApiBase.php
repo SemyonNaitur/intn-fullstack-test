@@ -26,7 +26,7 @@ abstract class ApiBase
     {
         if (empty($this->input['method'])) {
             $this->response->status = 'EMPTY_METHOD';
-            $this->response->message = "Empty 'method' param.";
+            $this->response->message = 'Empty "method" param.';
         } else {
             $method = $this->input['method'];
             if (!method_exists($this, $method)) {
@@ -64,7 +64,13 @@ abstract class ApiBase
 
     protected function output()
     {
-        $resp = (($this->input['raw_response'] ?? 0) == 1) ? $this->response->data : $this->response;
+        if ($this->input['raw_response'] ?? 0) {
+            $json = json_encode($this->response->data, JSON_PRETTY_PRINT);
+        } else {
+            $json = json_encode($this->response);
+        }
+        header('Content-type: application/json');
+        $resp = ($this->input['raw_response'] ?? 0) ? $this->response->data : $this->response;
         echo json_encode($resp);
         die;
     }

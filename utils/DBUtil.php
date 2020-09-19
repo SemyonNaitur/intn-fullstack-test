@@ -30,7 +30,7 @@ class DBUtil
 			try {
 				$this->pdo = self::PDO($cfg);
 			} catch (PDOException $e) {
-				$this->exception($e);
+				$this->db_exception($e);
 			}
 		} else {
 			throw new Exception('Invalid config array!');
@@ -45,7 +45,7 @@ class DBUtil
 		return $pdo;
 	}
 
-	public function beginTransaction()
+	public function begin_transaction()
 	{
 		$this->pdo->beginTransaction();
 	}
@@ -60,20 +60,15 @@ class DBUtil
 		$this->pdo->rollback();
 	}
 
-	protected function exception($e)
+	public function db_exception($e)
 	{
-		$err = 'Error';
 		if ($e instanceof PDOException) {
-			$err = 'DB Error';
+			return ['error' => ($this->debug) ? $e->getMessage() : 'DB Error.'];
 		}
-
-		if ($this->debug) {
-			$err = $e->getMessage();
-		}
-		return ['error' => $err];
+		throw $e;
 	}
 
-	public function getConnection()
+	public function get_connection()
 	{
 		return $this->pdo;
 	}
