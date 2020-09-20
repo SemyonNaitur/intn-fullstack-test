@@ -94,14 +94,20 @@ class CreatePostFormCmp extends UIComponent {
 
 	submitSuccess(res) {
 		if (res.status != 'OK') {
-			this.ajaxError(res);
+			if (res.status == 'VALIDATION_FAIL') {
+				// TODO:
+				alert('Validation failed!');
+				console.error(res.data.errors);
+			} else {
+				this.ajaxError(res);
+			}
 		} else {
 			this.clearForm();
 			alert(`
 				Success!
 				User id: ${res.data.user.id}.
 				Post id: ${res.data.post.id}.
-			`);
+			`.replace(/\t/g, ''));
 		}
 	}
 
@@ -268,7 +274,7 @@ $(function () {
 				Success!
 				Inserted users: ${res.data.inserted_users}.
 				Inserted posts: ${res.data.inserted_posts}.
-			`);
+			`.replace(/\t/g, ''));
 		}
 	}
 	//--- /posts ---//

@@ -8,30 +8,26 @@ class Post extends DBUtil
     protected $primary_key = 'id';
     protected $fields = [
         'id' => [
-            'col' => 'id',
             'type' => 'integer',
         ],
         'userId' => [
-            'col' => 'user_id',
             'type' => 'integer',
             'required' => true,
         ],
         'title' => [
-            'col' => 'title',
             'type' => 'string',
             'required' => true,
         ],
         'body' => [
-            'col' => 'body',
             'type' => 'string',
             'required' => true,
         ],
         'updatedAt' => [
-            'col' => 'updated_at',
+            'column' => 'updated_at',
             'type' => 'date',
         ],
         'createdAt' => [
-            'col' => 'created_at',
+            'column' => 'created_at',
             'type' => 'date',
         ],
     ];

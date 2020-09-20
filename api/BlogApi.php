@@ -69,16 +69,17 @@ class BlogApi extends ApiBase
 
 	public function create_post(array $params, ApiResponse $resp)
 	{
-		$db = $this->db;
-		$transaction = false;
-
-		$user = $params['user'];
-		$user['id'] ??= 0;
-
-		$post = $params['post'];
-		unset($post['id']);
-
 		try {
+			$db = $this->db;
+			$transaction = false;
+
+			$user = $params['user'];
+			$user['id'] = (($user['id'] ?? 0) > 0) ? $user['id'] : null;
+
+			$post = $params['post'];
+			unset($post['id']);
+
+			$user_create_err = ''; // non validation error
 			if (!$user['id']) {
 				$db->begin_transaction();
 				$transaction = true;
@@ -86,27 +87,28 @@ class BlogApi extends ApiBase
 				if (isset($res['error_bag'])) {
 					$this->validation_fail($res['error'], $res['error_bag']);
 				} elseif ($res['error']) {
-					$resp->status = 'ERR';
-					$resp->message = $res['error'];
+					$user_create_err = $res['error'];
 				} else {
 					$user = $res['record'];
 				}
 			}
-			$post['userId'] = $user['id'];
 
-			// Post::create is called even if User::create failed - for data validation.
-			$res = $this->post->create($post);
-			if (isset($res['error_bag'])) {
-				$this->validation_fail($res['error'], $res['error_bag']);
-			} elseif ($res['error']) {
+			$post['userId'] = ($user['id'] > 0) ? $user['id'] : null;
+
+			if ($user_create_err) {
 				$resp->status = 'ERR';
-				$resp->message = $res['error'];
+				$resp->message = $user_create_err;
 			} else {
-				$post = $res['record'];
-				$resp->data = [
-					'user' => $user,
-					'post' => $post
-				];
+				// Post::create is called even if user fields failed validation, to validate post fields.
+				$res = $this->post->create($post);
+				if (isset($res['error_bag'])) {
+					$this->validation_fail($res['error'], $res['error_bag']);
+				} elseif ($res['error']) {
+					$resp->status = 'ERR';
+					$resp->message = $res['error'];
+				} else {
+					$post = $res['record'];
+				}
 			}
 
 			if (empty($post['id'])) {

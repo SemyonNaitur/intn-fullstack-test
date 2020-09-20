@@ -2,13 +2,12 @@
 
 class Validator
 {
-    public static function validate(array $row, array $rules)
+    public static function validate(array $record, array $rules)
     {
         $errors = [];
-        $row_valid = true;
         foreach ($rules as $fld_name => $fld_rules) {
             $fld_rules = (is_array($fld_rules)) ? $fld_rules : explode('|', $fld_rules);
-            $val = $row[$fld_name] ?? '';
+            $val = $record[$fld_name] ?? '';
             $fld_errors = [];
 
             if (in_array('required', $fld_rules)) {
@@ -16,7 +15,6 @@ class Validator
                     $fld_errors[] = 'Required field';
                 }
             }
-
             if (!$fld_errors) {
                 foreach ($fld_rules as $rule) {
                     $func = trim($rule) . '_rule';
@@ -34,11 +32,13 @@ class Validator
 
             if ($fld_errors) {
                 $errors[$fld_name] = $fld_errors;
-                $row_valid = false;
             }
         }
-        return $row_valid ?: $errors;
+        return empty($errors) ?: $errors;
     }
+
+
+    //--- rules ---//
 
     public static function string_rule($val)
     {
@@ -59,4 +59,7 @@ class Validator
     {
         return (bool) filter_var($val, FILTER_VALIDATE_EMAIL) ?: 'Invalid email address.';
     }
+    //--- /rules ---//
+
+
 }
