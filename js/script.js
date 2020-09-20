@@ -67,10 +67,9 @@ class CreatePostFormCmp extends UIComponent {
 
 	submit() {
 		const loadingName = 'form';
-		if (this.isLoading(loadingName)) {
-			return;
-		}
+		if (this.isLoading(loadingName)) return;
 		this.loading(loadingName);
+
 		this.disable(this.$submitBtn);
 
 		const req = {
@@ -124,6 +123,58 @@ class CreatePostFormCmp extends UIComponent {
 		};
 	}
 }
+
+class UserStatsCmp extends UIComponent {
+	$reportRows;
+
+	init() {
+		this.$viewContainer.css('min-height', '20rem');
+		this.$reportRows = this.find('[data-id="report-rows"]');
+		this.getReport();
+	}
+
+	getReport() {
+		const loadingName = 'report';
+		if (this.isLoading(loadingName)) return;
+		this.loading(loadingName);
+
+		const req = {
+			method: 'user_stats',
+			params: {},
+		};
+		$.get(
+			this.apiEndpoint,
+			req,
+			res => this.getReportSuccess(res),
+			'json'
+		).fail(() => this.ajaxFail())
+			.always(() => {
+				this.loading(loadingName, true);
+			});
+	}
+
+	getReportSuccess(res) {
+		if (res.status != 'OK') {
+			this.ajaxError(res);
+		} else {
+			this.drawReportRows(res.data);
+		}
+	}
+
+	drawReportRows(data) {
+		this.$reportRows.empty();
+		data.map(row => {
+			const tr = `
+				<tr>
+					<td>${row.user_id}</td>
+					<td>${row.monthly_average}</td>
+					<td>${row.weekly_average}</td>
+				</tr>
+			`;
+			this.$reportRows.append(tr);
+		});
+	}
+}
 //--- /Component classes---//
 
 
@@ -166,6 +217,7 @@ $(function () {
 
 	const componentsConfig = [
 		{ view: 'create-post-form', ctor: CreatePostFormCmp, apiEndpoint: apiURL },
+		{ view: 'user-stats', ctor: UserStatsCmp, apiEndpoint: apiURL },
 	];
 	const cmpInstances = [];
 

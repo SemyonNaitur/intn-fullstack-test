@@ -5,6 +5,7 @@ require_once UTILS_DIR . '/Validator.php';
 class Post extends DBUtil
 {
     protected $table = 'posts';
+    protected $primary_key = 'id';
     protected $fields = [
         'id' => [
             'col' => 'id',
@@ -63,14 +64,44 @@ class Post extends DBUtil
         }
     }
 
+    public function create(array $record)
+    {
+        try {
+            $ret = ['record' => null, 'error' => ''];
+            $pdo = $this->pdo;
+            $tbl = $this->table;
+
+            $record = $this->filter_fields($record, ['userId', 'title', 'body']);
+            $rules = [
+                'userId' => 'required|integer',
+                'title' => 'required',
+                'body' => 'required',
+            ];
+            if (($valid = Validator::validate($record, $rules)) !== true) {
+                $ret['error'] = 'Validation failed.';
+                $ret['error_bag'] = $valid;
+            } else {
+                $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($record);
+                $record['id'] = $pdo->lastInsertId();
+                $ret['record'] = $record;
+            }
+            return $ret;
+        } catch (PDOException $e) {
+            return $this->db_exception($e);
+        }
+    }
+
     public function search_by_id($id)
     {
         try {
             $ret = ['row' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
+            $pk = $this->primary_key;
 
-            $sql = "SELECT * FROM $tbl WHERE id=? LIMIT 1";
+            $sql = "SELECT * FROM $tbl WHERE $pk=? LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$id]);
             $ret['row'] = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -114,29 +145,16 @@ class Post extends DBUtil
         }
     }
 
-    public function create(array $record)
+    public function user_stats()
     {
         try {
-            $ret = ['record' => null, 'error' => ''];
+            $ret = ['result' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $record = $this->filter_fields($record, ['userId', 'title', 'body']);
-            $rules = [
-                'userId' => 'required|integer',
-                'title' => 'required',
-                'body' => 'required',
-            ];
-            if (($valid = Validator::validate($record, $rules)) !== true) {
-                $ret['error'] = 'Validation failed.';
-                $ret['error_bag'] = $valid;
-            } else {
-                $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($record);
-                $record['id'] = $pdo->lastInsertId();
-                $ret['record'] = $record;
-            }
+            $sql  = "SELECT user_id, ROUND((COUNT(*) / 12), 2) AS monthly_average, ROUND((COUNT(*) / (365/7)), 2) AS weekly_average ";
+            $sql .= "FROM $tbl GROUP BY user_id, YEAR(created_at) ORDER BY user_id";
+            $ret['result'] = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             return $ret;
         } catch (PDOException $e) {
             return $this->db_exception($e);

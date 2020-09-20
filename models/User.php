@@ -5,6 +5,7 @@ require_once UTILS_DIR . '/Validator.php';
 class User extends DBUtil
 {
     protected $table = 'users';
+    protected $primary_key = 'id';
     protected $fields = [
         'id' => [
             'type' => 'integer',

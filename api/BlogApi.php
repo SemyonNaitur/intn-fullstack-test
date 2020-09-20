@@ -123,9 +123,9 @@ class BlogApi extends ApiBase
 		}
 	}
 
-	public function posts_by_id(array $params, ApiResponse $resp)
+	public function user_stats(array $params, ApiResponse $resp)
 	{
-		$res = $this->post->search_by_id($params['id']);
+		$res = $this->post->user_stats();
 		if ($res['error']) {
 			$resp->status = 'ERR';
 			$resp->message = $res['error'];
