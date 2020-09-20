@@ -1,13 +1,13 @@
 class UIComponent {
-	ajaxURL;
+	apiEndpoint;
 	$viewContainer;
 	loadingFadeInDur = 50;
 	loadingFadeOutDur = 200;
 	loadingItems = new Set;
 
-	constructor($viewContainer, ajaxURL = '') {
+	constructor($viewContainer, apiEndpoint = '') {
 		this.$viewContainer = $viewContainer;
-		this.ajaxURL = ajaxURL;
+		this.apiEndpoint = apiEndpoint;
 	}
 
 	init() { }
@@ -17,15 +17,22 @@ class UIComponent {
 	}
 
 	loading(name, done = false) {
-		const $el = this.find(`[data-load="${name}"]`);
-		const $loading = $el.find('.loading');
+		const $el = this.find(`[data-load="${name}"] > .loading`);
 		if (done) {
 			this.loadingItems.delete(name);
-			$loading.fadeOut(this.loadingFadeOutDur);
+			$el.fadeOut(this.loadingFadeOutDur);
 		} else {
 			this.loadingItems.add(name);
-			$loading.fadeIn(this.loadingFadeInDur);
+			$el.fadeIn(this.loadingFadeInDur);
 		}
+	}
+
+	isLoading(name) {
+		return this.loadingItems.has(name);
+	}
+
+	disable($el, enable = false) {
+		$el.prop('disabled', !enable);
 	}
 
 	ajaxError(err) {
@@ -38,178 +45,117 @@ class UIComponent {
 	}
 }
 
-class Salesmen extends UIComponent {
-	$cityInput;
-	selectedCity = '';
-	$salesmenList;
+//--- Component classes---//
+
+class CreatePostFormCmp extends UIComponent {
+	$form;
+	$submitBtn;
 
 	init() {
-		this.initCitySearch();
-		this.$salesmenList = this.find('[data-id="salesmen-list"]');
+		this.initForm();
 	}
 
-	initCitySearch() {
-		const $cityInput = this.find('[data-input="city"]');
-		$cityInput.autocomplete({
-			source: (request, response) => {
-				const req = {
-					method: 'get_salesman_cities',
-					raw_response: 1,
-					search: request.term,
-					limit: 5
-				};
-				$.get(
-					this.ajaxURL,
-					req,
-					res => response(res),
-					'json'
-				);
-			},
-			delay: 200,
-			minLength: 1,
-			select: (ev, ui) => this.onSelect(ev, ui),
+	initForm() {
+		const $form = this.find('form');
+		$form.submit(ev => {
+			ev.preventDefault();
+			this.submit();
 		});
-		this.$cityInput = $cityInput;
+		this.$submitBtn = $form.find('[type="submit"]');
+		this.$form = $form;
 	}
 
-	onSearch(ev, ui) {
-		this.getSalesmanCities(ev.target.value);
-	}
-
-	getSalesmanCities(search) {
-		const req = {
-			method: 'get_salesman_cities',
-			search,
-			limit: 5
-		};
-		$.get(
-			this.ajaxURL,
-			req,
-			res => this.getSalesmanCitiesSuccess(res),
-			'json'
-		).fail(() => this.ajaxFail())
-	}
-
-	getSalesmanCitiesSuccess(res) {
-		if (res.status != 'OK') {
-			this.ajaxError(res);
-		} else {
-			this.$cityInput.autocomplete('option', 'source', res.data);
-		}
-	}
-
-	onSelect(ev, ui) {
-		const val = ui.item.value;
-		if (val != this.selectedCity) {
-			this.selectedCity = val;
-			this.getSalesmen(val);
-		}
-	}
-
-	getSalesmen(city) {
-		if (this.loading.salesmen) {
-			return;
-		}
-		const loadingName = 'salesmen';
+	submit() {
+		const loadingName = 'form';
+		if (this.isLoading(loadingName)) return;
 		this.loading(loadingName);
-		this.$cityInput.autocomplete('disable');
 
-		const req = { method: 'all_salesmen_from', city };
+		this.disable(this.$submitBtn);
+
+		const req = {
+			method: 'create_post',
+			params: {
+				user: this.formGetUser(),
+				post: this.formGetPost(),
+			},
+		};
+
 		$.get(
-			this.ajaxURL,
+			this.apiEndpoint,
 			req,
-			res => this.getSalesmenSuccess(res),
+			res => this.submitSuccess(res),
 			'json'
 		).fail(() => this.ajaxFail())
 			.always(() => {
 				this.loading(loadingName, true);
-				this.$cityInput.autocomplete('enable');
+				this.disable(this.$submitBtn, true);
 			});
 	}
 
-	getSalesmenSuccess(res) {
+	submitSuccess(res) {
 		if (res.status != 'OK') {
-			this.ajaxError(res);
+			if (res.status == 'VALIDATION_FAIL') {
+				// TODO:
+				alert('Validation failed!');
+				console.error(res.data.errors);
+			} else {
+				this.ajaxError(res);
+			}
 		} else {
-			this.drawSalesmenList(res.data);
+			this.clearForm();
+			alert(`
+				Success!
+				User id: ${res.data.user.id}.
+				Post id: ${res.data.post.id}.
+			`.replace(/\t/g, ''));
 		}
 	}
 
-	drawSalesmenList(data) {
-		this.$salesmenList.empty();
-		data.map(item => {
-			this.$salesmenList.append(`<li class="list-group-item">${item}</li>`);
-		});
+	clearForm() {
+		this.$form.find('[data-input]').val('');
+	}
+
+	formGetUser() {
+		return {
+			name: this.$form.find('[data-input="name"]').val(),
+			email: this.$form.find('[data-input="email"]').val(),
+		};
+	}
+
+	formGetPost() {
+		return {
+			title: this.$form.find('[data-input="title"]').val(),
+			body: this.$form.find('[data-input="body"]').val(),
+		};
 	}
 }
 
-class Report extends UIComponent {
-	$reportParamsForm;
+class UserStatsCmp extends UIComponent {
 	$reportRows;
-	currentParams;
 
 	init() {
-		this.$reportParamsForm = this.find('[data-form="report-params"]');
-		this.$reportParamsForm.submit(ev => this.onReportParamsSubmit(ev));
-
-		this.initDateRange();
 		this.$viewContainer.css('min-height', '20rem');
-
 		this.$reportRows = this.find('[data-id="report-rows"]');
+		this.getReport();
 	}
 
-	initDateRange() {
-		const $fromDate = this.$reportParamsForm.find('#reportFromDate');
-		const $toDate = this.$reportParamsForm.find('#reportToDate');
-
-		$fromDate.datetimepicker({
-			defaultDate: moment().subtract(10, 'y'),
-			minDate: moment(0),
-		});
-		$toDate.datetimepicker({
-			defaultDate: moment(),
-		});
-
-		$fromDate.on("change.datetimepicker", function (e) {
-			$toDate.datetimepicker('minDate', e.date);
-		});
-		$toDate.on("change.datetimepicker", function (e) {
-			$fromDate.datetimepicker('maxDate', e.date);
-		});
-	}
-
-	onReportParamsSubmit(ev) {
-		ev.preventDefault();
-		const params = {};
-		const fd = new FormData(this.$reportParamsForm[0]);
-		for (let [name, value] of fd.entries()) {
-			if (value && (['from_date', 'to_date'].indexOf(name) > -1)) {
-				value = moment(value, 'DD/MM/YYYY').format('YYYY-MM-DD');
-			}
-			params[name] = value;
-		}
-		this.currentParams = params;
-		this.getReport(params);
-	}
-
-	getReport(params) {
-		if (this.loading.report) {
-			return;
-		}
+	getReport() {
 		const loadingName = 'report';
+		if (this.isLoading(loadingName)) return;
 		this.loading(loadingName);
-		this.$reportParamsForm.find('[type="submit"]').prop("disabled", true);
 
-		const req = Object.assign({ method: 'get_full_details_of_sales' }, params);
+		const req = {
+			method: 'user_stats',
+			params: {},
+		};
 		$.get(
-			this.ajaxURL,
+			this.apiEndpoint,
 			req,
 			res => this.getReportSuccess(res),
 			'json'
 		).fail(() => this.ajaxFail())
 			.always(() => {
 				this.loading(loadingName, true);
-				this.$reportParamsForm.find('[type="submit"]').prop("disabled", false);
 			});
 	}
 
@@ -224,81 +170,113 @@ class Report extends UIComponent {
 	drawReportRows(data) {
 		this.$reportRows.empty();
 		data.map(row => {
-			const ord_date = moment(row.ord_date).format('DD/MM/YYYY');
 			const tr = `
 				<tr>
-					<td>${row.salesman_name}</td>
-					<td>${row.salesman_id}</td>
-					<td>${ord_date}</td>
-					<td>${row.purch_amt}</td>
-					<td>${row.client_id}</td>
-					<td>${row.client_name}</td>
-					<td>${row.client_full_address}</td>
-					<td>${row.client_gender}</td>
-					<td>${row.commission_amt}</td>
+					<td>${row.user_id}</td>
+					<td>${row.monthly_average}</td>
+					<td>${row.weekly_average}</td>
 				</tr>
 			`;
 			this.$reportRows.append(tr);
 		});
 	}
 }
-
-class FormCmp extends UIComponent {
-	$textInput;
-	$textDisplay;
-
-	init() {
-		this.initTextInput();
-		this.$textDisplay = this.find('[data-id="text-display"]');
-	}
-
-	initTextInput() {
-		this.$textInput = this.find('[data-input="text"]').on({
-			keyup: ev => this.onTextUpdate(ev),
-			change: ev => this.onTextUpdate(ev),
-		});
-	}
-
-	onTextUpdate(ev) {
-		this.setTextDisplayed(ev.target.value);
-	}
-
-	setTextDisplayed(text) {
-		this.$textDisplay.text(text);
-	}
-}
+//--- /Component classes---//
 
 
-$(function () {
-
-	$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
-		format: 'DD/MM/YYYY',
-	});
-
-	const salesAjaxURL = 'pages/sales/ajax.php';
-
-	const $body = $('body');
-	$body.find('.loading-wrap').append(`
+function initLoadingInd($body) {
+	$body.find('.loading-wrap:not(:has(> .loading))').append(`
 		<div class="loading">
 			<div class="loading-overlay d-flex justify-content-center align-items-center">
 				<i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
 			</div>
 		</div>
 	`);
+}
+
+function loadingInd($el, done = false, animDur = 50) {
+	const $loading = $el.find('.loading');
+	if (done) {
+		$loading.fadeOut(animDur);
+	} else {
+		$loading.fadeIn(animDur);
+	}
+}
+
+function ajaxError(err) {
+	console.error(err);
+	alert(err.message);
+}
+
+function ajaxFail() {
+	alert('Server error!');
+}
+
+$(function () {
+
+	const apiURL = 'api/';
+	const loadingFadeInDur = 50;
+	const loadingFadeOutDur = 200;
+
+	const $body = $('body');
+	initLoadingInd($body);
 
 	const componentsConfig = [
-		{ view: 'salesmen', ctor: Salesmen, ajaxURL: salesAjaxURL },
-		{ view: 'report', ctor: Report, ajaxURL: salesAjaxURL },
-		//{ view: 'form', ctor: FormCmp, ajaxURL: '' },
+		{ view: 'create-post-form', ctor: CreatePostFormCmp, apiEndpoint: apiURL },
+		{ view: 'user-stats', ctor: UserStatsCmp, apiEndpoint: apiURL },
 	];
 	const cmpInstances = [];
 
 	for (const cfg of componentsConfig) {
-		$body.find(`[data-view="${cfg.view}"]`).each(function () {
-			const cmp = new cfg.ctor($(this), cfg.ajaxURL);
+		$body.find(`[data-view="${cfg.view}"]`).each((i, el) => {
+			const cmp = new cfg.ctor($(this), cfg.apiEndpoint);
 			cmp.init();
 			cmpInstances.push(cmp);
 		});
 	}
+
+	//--- posts ---//
+	const $postsContent = $body.find('#postsContent');
+
+	$postsContent.find('[data-action="fetch-data"]').click(() => {
+		loadingInd($postsContent);
+		fetchData(apiURL);
+	});
+
+	const $searchBy = $postsContent.find('[data-input="search-by"]');
+	const $searchParam = $postsContent.find('[data-input="search-param"]');
+	$postsContent.find('[data-action="search"]').click(() => {
+		const url = `posts-json.php?${$searchBy.val()}=${$searchParam.val()}`;
+		window.open(url, '_blank');
+	});
+
+	function fetchData(apiURL) {
+		const req = {
+			method: 'fetch_remote_data',
+			params: {}
+		};
+		$.get(
+			apiURL,
+			req,
+			res => fetchDataSuccess(res),
+			'json'
+		).fail(() => ajaxFail())
+			.always(() => {
+				loadingInd($postsContent, true, loadingFadeOutDur);
+			});
+	}
+
+	function fetchDataSuccess(res) {
+		if (res.status != 'OK') {
+			ajaxError(res);
+		} else {
+			alert(`
+				Success!
+				Inserted users: ${res.data.inserted_users}.
+				Inserted posts: ${res.data.inserted_posts}.
+			`.replace(/\t/g, ''));
+		}
+	}
+	//--- /posts ---//
 
 });
