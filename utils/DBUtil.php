@@ -69,10 +69,16 @@ class DBUtil
 		return $this->columns[$column] ?? false;
 	}
 
-	public function is_unique($value, string $field, string $table = null)
+	/**
+	 * @param string|number $value
+	 * @param string $field field or column name
+	 * @param string $table
+	 * @return bool
+	 */
+	public function is_unique($value, string $field, string $table = null): bool
 	{
 		$table ??= $this->table;
-		$col = $this->field_to_column($field);
+		$col = $this->field_to_column($field) ?: $field;
 		$sql = "SELECT 1 FROM $table WHERE $col=? LIMIT 1";
 		$stmt = $this->pdo->prepare($sql);
 		$stmt->execute([$value]);
