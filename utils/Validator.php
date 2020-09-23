@@ -2,6 +2,9 @@
 
 class Validator
 {
+    /**
+     * @return bool|array true on success or error bag array on failure
+     */
     public static function validate(array $record, array $rules)
     {
         $errors = [];

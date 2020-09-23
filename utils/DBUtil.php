@@ -69,10 +69,18 @@ class DBUtil
 		return $this->columns[$column] ?? false;
 	}
 
-	public function is_unique($value, string $field, string $table = null)
+	/**
+	 * Checks if the value axists in the table
+	 * 
+	 * @param 	string|number 	$value
+	 * @param 	string 			$field field or column name
+	 * @param 	string 			$table
+	 * @return 	bool
+	 */
+	public function is_unique($value, string $field, string $table = null): bool
 	{
 		$table ??= $this->table;
-		$col = $this->field_to_column($field);
+		$col = $this->field_to_column($field) ?: $field;
 		$sql = "SELECT 1 FROM $table WHERE $col=? LIMIT 1";
 		$stmt = $this->pdo->prepare($sql);
 		$stmt->execute([$value]);
@@ -107,7 +115,14 @@ class DBUtil
 		return $this->pdo;
 	}
 
-	public function filter_fields(array $record, array $allowed = null)
+	/**
+	 * Removes unwanted fields from given record.
+	 * 
+	 * @param 	array 	$record
+	 * @param 	array 	$allowed optional wanted fields list
+	 * @return 	array 	new filtered array
+	 */
+	public function filter_fields(array $record, array $allowed = null): array
 	{
 		$allowed ??= array_keys($this->fields);
 		return array_filter(
