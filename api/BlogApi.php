@@ -31,40 +31,40 @@ class BlogApi extends ApiBase
 	{
 		$url = $this->data_url;
 
-		$resp->data = [
+		$data = [
 			'inserted_users' => 0,
 			'inserted_posts' => 0,
 		];
+		$err = '';
 
 		$res = $this->fetch_users($url);
-		if ($res['error']) {
-			$resp->status = 'ERR';
-			$resp->message = $res['error'];
-		} else {
-			$resp->data['inserted_users'] = $res['inserted'];
+		if (!($err = $res['error'])) {
+			$data['inserted_users'] = $res['inserted'];
 		}
 
-		if ($resp->data['inserted_users']) {
+		if ($data['inserted_users']) {
 			$res = $this->fetch_posts($url);
-			if ($res['error']) {
-				$resp->status = 'ERR';
-				$resp->message = $res['error'];
-			} else {
-				$resp->data['inserted_posts'] = $res['inserted'];
+			if (!($err = $res['error'])) {
+				$data['inserted_posts'] = $res['inserted'];
 			}
+		}
+
+		if ($err) {
+			$this->error($err);
+		} else {
+			$this->success($data);
 		}
 	}
 
 	public function create_user(array $params, ApiResponse $resp)
 	{
-		$res = $this->user->create($params['user']);
-		if (isset($res['error_bag'])) {
-			$this->validation_fail($res['error'], $res['error_bag']);
-		} elseif ($res['error']) {
-			$resp->status = 'ERR';
-			$resp->message = $res['error'];
-		} else {
-			$resp->data['user'] = $res['user'];
+		if ($this->validate_user($params['user'])) {
+			$res = $this->user->create($params['user']);
+			if ($res['error']) {
+				$this->error($res['error']);
+			} else {
+				$this->success($res['user']);
+			}
 		}
 	}
 
@@ -82,26 +82,12 @@ class BlogApi extends ApiBase
 			unset($post['id']);
 
 			$err = '';
-			$error_bag = [];
 
 			if (!$user['id']) {
 				$db->begin_transaction();
 				$transaction = true;
 
-				$rules = [
-					'name' => 'required|string',
-					'email' => 'required|string',
-				];
-				if (($valid = Validator::validate($user, $rules)) !== true) {
-					$error_bag = $this->validation_fail($valid);
-				}
-				if (empty($error_bag['email'])) {
-					if (!$this->user->is_unique($user['email'], 'email')) {
-						$error_bag = $this->validation_fail(['email' => ['Email already exists']]);
-					}
-				}
-
-				if (!$error_bag) {
+				if (!$this->validate_user($user)) {
 					$res = $this->user->create($user);
 					if (!($err = $res['error'])) {
 						$user = $res['record'];
@@ -112,14 +98,7 @@ class BlogApi extends ApiBase
 			if (!$err) {
 				$post['userId'] = ($user['id'] > 0) ? $user['id'] : null;
 
-				$rules = [
-					'userId' => 'required|integer',
-					'title' => 'required',
-					'body' => 'required',
-				];
-				if (($valid = Validator::validate($post, $rules)) !== true) {
-					$this->validation_fail($valid);
-				} else {
+				if (!$this->validate_post($post)) {
 					$res = $this->post->create($post);
 					if (!($err = $res['error'])) {
 						$post = $res['record'];
@@ -143,10 +122,9 @@ class BlogApi extends ApiBase
 	{
 		$res = $this->post->user_stats();
 		if ($res['error']) {
-			$resp->status = 'ERR';
-			$resp->message = $res['error'];
+			$this->error($res['error']);
 		} else {
-			$resp->data = $res['result'];
+			$this->success($res['result']);
 		}
 	}
 	//--- /API methods ---//
@@ -186,5 +164,37 @@ class BlogApi extends ApiBase
 			}
 		}
 		return $ret;
+	}
+
+	protected function validate_user(array $user)
+	{
+		$error_bag = [];
+		$rules = [
+			'name' => 'required|string',
+			'email' => 'required|string',
+		];
+		if (($valid = Validator::validate($user, $rules)) !== true) {
+			$error_bag = $this->validation_fail($valid);
+		}
+		if (empty($error_bag['email'])) {
+			if (!$this->user->is_unique($user['email'], 'email')) {
+				$error_bag = $this->validation_fail(['email' => ['Email already exists']]);
+			}
+		}
+		return $error_bag;
+	}
+
+	protected function validate_post(array $post)
+	{
+		$error_bag = [];
+		$rules = [
+			'userId' => 'required|integer',
+			'title' => 'required',
+			'body' => 'required',
+		];
+		if (($valid = Validator::validate($post, $rules)) !== true) {
+			$error_bag = $this->validation_fail($valid);
+		}
+		return $error_bag;
 	}
 }

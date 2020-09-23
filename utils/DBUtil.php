@@ -70,10 +70,12 @@ class DBUtil
 	}
 
 	/**
-	 * @param string|number $value
-	 * @param string $field field or column name
-	 * @param string $table
-	 * @return bool
+	 * Checks if the value axists in the table
+	 * 
+	 * @param 	string|number 	$value
+	 * @param 	string 			$field field or column name
+	 * @param 	string 			$table
+	 * @return 	bool
 	 */
 	public function is_unique($value, string $field, string $table = null): bool
 	{
@@ -113,7 +115,14 @@ class DBUtil
 		return $this->pdo;
 	}
 
-	public function filter_fields(array $record, array $allowed = null)
+	/**
+	 * Removes unwanted fields from given record.
+	 * 
+	 * @param 	array 	$record
+	 * @param 	array 	$allowed optional wanted fields list
+	 * @return 	array 	new filtered array
+	 */
+	public function filter_fields(array $record, array $allowed = null): array
 	{
 		$allowed ??= array_keys($this->fields);
 		return array_filter(

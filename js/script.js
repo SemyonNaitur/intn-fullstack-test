@@ -238,16 +238,18 @@ $(function () {
 	//--- posts ---//
 	const $postsContent = $body.find('#postsContent');
 
-	$postsContent.find('[data-action="fetch-data"]').click(() => {
-		loadingInd($postsContent);
-		fetchData(apiURL);
-	});
-
+	//json
 	const $searchBy = $postsContent.find('[data-input="search-by"]');
 	const $searchParam = $postsContent.find('[data-input="search-param"]');
 	$postsContent.find('[data-action="search"]').click(() => {
 		const url = `posts-json.php?${$searchBy.val()}=${$searchParam.val()}`;
 		window.open(url, '_blank');
+	});
+
+	//fetch data
+	$postsContent.find('[data-action="fetch-data"]').click(() => {
+		loadingInd($postsContent);
+		fetchData(apiURL);
 	});
 
 	function fetchData(apiURL) {

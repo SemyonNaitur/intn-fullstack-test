@@ -25,13 +25,11 @@ abstract class ApiBase
     public function run()
     {
         if (empty($this->input['method'])) {
-            $this->response->status = 'EMPTY_METHOD';
-            $this->response->message = 'Empty "method" param.';
+            $this->error('Empty "method" param.', 'EMPTY_METHOD');
         } else {
             $method = $this->input['method'];
             if (!method_exists($this, $method)) {
-                $this->response->status = 'UNSUPORTED_METHOD';
-                $this->response->message = "Unsuported method: $method.";
+                $this->error("Unsuported method: $method.", 'UNSUPORTED_METHOD');
             } else {
                 $this->$method($this->input['params'] ?? [], $this->response);
             }
@@ -70,7 +68,7 @@ abstract class ApiBase
     }
 
     /**
-     * @return array - deeply merged error bag
+     * @return array deeply merged error bag
      */
     protected function validation_fail(array $error_bag, $msg = '', ApiResponse $resp = null)
     {
@@ -83,11 +81,6 @@ abstract class ApiBase
 
     protected function output()
     {
-        if ($this->input['raw_response'] ?? 0) {
-            $json = json_encode($this->response->data, JSON_PRETTY_PRINT);
-        } else {
-            $json = json_encode($this->response);
-        }
         header('Content-type: application/json');
         $resp = ($this->input['raw_response'] ?? 0) ? $this->response->data : $this->response;
         echo json_encode($resp);
