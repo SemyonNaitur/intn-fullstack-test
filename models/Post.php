@@ -1,6 +1,6 @@
 <?php
 require_once UTILS_DIR . '/DBUtil.php';
-require_once UTILS_DIR . '/Validator.php';
+
 
 class Post extends DBUtil
 {
@@ -66,23 +66,13 @@ class Post extends DBUtil
             $ret = ['record' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
-
             $record = $this->filter_fields($record, ['userId', 'title', 'body']);
-            $rules = [
-                'userId' => 'required|integer',
-                'title' => 'required',
-                'body' => 'required',
-            ];
-            if (($valid = Validator::validate($record, $rules)) !== true) {
-                $ret['error'] = 'Validation failed.';
-                $ret['error_bag'] = $valid;
-            } else {
-                $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($record);
-                $record['id'] = $pdo->lastInsertId();
-                $ret['record'] = $record;
-            }
+
+            $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($record);
+            $record['id'] = $pdo->lastInsertId();
+            $ret['record'] = $record;
             return $ret;
         } catch (PDOException $e) {
             return $this->db_exception($e);

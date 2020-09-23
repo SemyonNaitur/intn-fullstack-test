@@ -4,7 +4,7 @@ class ApiResponse
 {
     public $data = null;
 
-    public function __construct($status = 'OK', $message = '')
+    public function __construct($status = '', $message = '')
     {
         $this->status = $status;
         $this->message = $message;
@@ -54,12 +54,31 @@ abstract class ApiBase
         return $this->response;
     }
 
-    protected function validation_fail(string $msg, array $error_bag, ApiResponse $resp = null)
+    protected function success($data = null, $msg = '', ApiResponse $resp = null)
+    {
+        $resp ??= $this->response;
+        $resp->status = 'OK';
+        $resp->message = $msg;
+        $resp->data = $data;
+    }
+
+    protected function error($msg = '', $status = '', ApiResponse $resp = null)
+    {
+        $resp ??= $this->response;
+        $resp->status = (empty($status)) ? 'ERR.' : $status;
+        $resp->message = $msg;
+    }
+
+    /**
+     * @return array - deeply merged error bag
+     */
+    protected function validation_fail(array $error_bag, $msg = '', ApiResponse $resp = null)
     {
         $resp ??= $this->response;
         $resp->status = 'VALIDATION_FAIL';
-        $resp->message = $msg;
-        $resp->data['errors'] = array_merge(($resp->data['errors'] ?? []), $error_bag);
+        $resp->message = (empty($msg)) ? 'Validation failed.' : $msg;
+        $resp->data['errors'] = array_merge_recursive(($resp->data['errors'] ?? []), $error_bag);
+        return $resp->data['errors'];
     }
 
     protected function output()

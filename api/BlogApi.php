@@ -1,5 +1,6 @@
 <?php
 require_once UTILS_DIR . '/ApiBase.php';
+require_once UTILS_DIR . '/Validator.php';
 
 require_once MODELS_DIR . '/Post.php';
 require_once MODELS_DIR . '/User.php';
@@ -75,50 +76,63 @@ class BlogApi extends ApiBase
 
 			$user = $params['user'];
 			$user['id'] = (($user['id'] ?? 0) > 0) ? $user['id'] : null;
+			$user['email'] = trim(($user['email'] ?? ''));
 
 			$post = $params['post'];
 			unset($post['id']);
 
-			$user_create_err = ''; // non validation error
+			$err = '';
+			$error_bag = [];
+
 			if (!$user['id']) {
 				$db->begin_transaction();
 				$transaction = true;
-				$res = $this->user->create($user);
-				if (isset($res['error_bag'])) {
-					$this->validation_fail($res['error'], $res['error_bag']);
-				} elseif ($res['error']) {
-					$user_create_err = $res['error'];
-				} else {
-					$user = $res['record'];
+
+				$rules = [
+					'name' => 'required|string',
+					'email' => 'required|string',
+				];
+				if (($valid = Validator::validate($user, $rules)) !== true) {
+					$error_bag = $this->validation_fail($valid);
+				}
+				if (empty($error_bag['email'])) {
+					if (!$this->user->is_unique($user['email'], 'email')) {
+						$error_bag = $this->validation_fail(['email' => ['Email already exists']]);
+					}
+				}
+
+				if (!$error_bag) {
+					$res = $this->user->create($user);
+					if (!($err = $res['error'])) {
+						$user = $res['record'];
+					}
 				}
 			}
 
-			$post['userId'] = ($user['id'] > 0) ? $user['id'] : null;
+			if (!$err) {
+				$post['userId'] = ($user['id'] > 0) ? $user['id'] : null;
 
-			if ($user_create_err) {
-				$resp->status = 'ERR';
-				$resp->message = $user_create_err;
-			} else {
-				// Post::create is called even if user fields failed validation, to validate post fields.
-				$res = $this->post->create($post);
-				if (isset($res['error_bag'])) {
-					$this->validation_fail($res['error'], $res['error_bag']);
-				} elseif ($res['error']) {
-					$resp->status = 'ERR';
-					$resp->message = $res['error'];
+				$rules = [
+					'userId' => 'required|integer',
+					'title' => 'required',
+					'body' => 'required',
+				];
+				if (($valid = Validator::validate($post, $rules)) !== true) {
+					$this->validation_fail($valid);
 				} else {
-					$post = $res['record'];
+					$res = $this->post->create($post);
+					if (!($err = $res['error'])) {
+						$post = $res['record'];
+					}
 				}
 			}
 
 			if (empty($post['id'])) {
 				if ($transaction) $db->rollback();
+				$this->error($err);
 			} else {
 				if ($transaction) $db->commit();
-				$resp->data = [
-					'user' => $user,
-					'post' => $post
-				];
+				$this->success(compact('user', 'post'));
 			}
 		} catch (PDOException $e) {
 			$db->db_exception($e);
