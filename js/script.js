@@ -1,13 +1,43 @@
+class ParamsContainer {
+	_params = {};
+
+	/**
+	 * @param {Object} [params] 
+	 * @return {Object | void}
+	 */
+	params(params) {
+		if (!params) {
+			return Object.assign({}, this._params);
+		}
+		if (typeof params !== 'object') throw new TypeError(`Invalid params object: ${params}`);
+		this._params = Object.assign({}, this._params, params);
+	}
+
+	/**
+	 * @param {string} property 
+	 * @param {*} value 
+	 * @return {*}
+	 */
+	param(property, value) {
+		if (typeof value === 'undefined') {
+			const val = this._params[property];
+			return (val && (typeof val === 'object')) ? Object.assign({}, val) : val;
+		}
+		const update = {};
+		update[property] = Object.assign({}, value);
+		this._params = Object.assign({}, this._params, update);
+	}
+}
+
 class UIComponent {
-	apiEndpoint;
+	static loadingFadeInDur = 50;
+	static loadingFadeOutDur = 200;
+
 	$viewContainer;
-	loadingFadeInDur = 50;
-	loadingFadeOutDur = 200;
 	loadingItems = new Set;
 
-	constructor($viewContainer, apiEndpoint = '') {
+	constructor($viewContainer) {
 		this.$viewContainer = $viewContainer;
-		this.apiEndpoint = apiEndpoint;
 	}
 
 	init() { }
@@ -20,10 +50,19 @@ class UIComponent {
 		const $el = this.find(`[data-load="${name}"] > .loading`);
 		if (done) {
 			this.loadingItems.delete(name);
-			$el.fadeOut(this.loadingFadeOutDur);
+			$el.fadeOut(UIComponent.loadingFadeOutDur);
 		} else {
 			this.loadingItems.add(name);
-			$el.fadeIn(this.loadingFadeInDur);
+			$el.fadeIn(UIComponent.loadingFadeInDur);
+		}
+	}
+
+	static loading($el, done = false) {
+		const $loading = $el.find('.loading');
+		if (done) {
+			$loading.fadeOut(UIComponent.loadingFadeOutDur);
+		} else {
+			$loading.fadeIn(UIComponent.loadingFadeInDur);
 		}
 	}
 
@@ -36,33 +75,79 @@ class UIComponent {
 	}
 
 	ajaxError(err) {
+		UIComponent.ajaxError(err);
+	}
+
+	static ajaxError(err) {
 		console.error(err);
 		alert(err.message);
 	}
 
 	ajaxFail() {
+		UIComponent.ajaxFail()
+	}
+
+	static ajaxFail() {
 		alert('Server error!');
 	}
+
+	static initLoading($body) {
+		$body.find('.loading-wrap:not(:has(> .loading))').append(`
+			<div class="loading">
+				<div class="loading-overlay d-flex justify-content-center align-items-center">
+					<i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
+				</div>
+			</div>
+		`);
+	}
 }
+
 
 //--- Component classes---//
 
 class CreatePostFormCmp extends UIComponent {
-	$form;
-	$submitBtn;
+	// $form;
+	// $submitBtn;
+	form;
+	apiUrl;
+
+	constructor($viewContainer, dependencies) {
+		super($viewContainer);
+		this.setDependencies(dependencies);
+	}
+
+	setDependencies(dependencies) {
+		if (!(dependencies?.form instanceof FormService)) {
+			throw new TypeError('Missing dependency: form');
+		}
+		this.form = dependencies.form;
+
+		if (!dependencies?.apiUrl) {
+			throw new TypeError('Missing dependency: apiUrl');
+		}
+		this.apiUrl = dependencies.apiUrl;
+	}
 
 	init() {
 		this.initForm();
 	}
 
 	initForm() {
-		const $form = this.find('form');
-		$form.submit(ev => {
-			ev.preventDefault();
-			this.submit();
-		});
-		this.$submitBtn = $form.find('[type="submit"]');
-		this.$form = $form;
+		const params = {
+			selectors: { form: 'form', submitBtn: '[type="submit"]' },
+			onSubmit: ev => {
+				ev.preventDefault();
+				if (!this.form.disabled) this.submit();
+			}
+		}
+		this.form.init();
+		// const $form = this.find('form');
+		// $form.submit(ev => {
+		// 	ev.preventDefault();
+		// 	this.submit();
+		// });
+		// this.$submitBtn = $form.find('[type="submit"]');
+		// this.$form = $form;
 	}
 
 	submit() {
@@ -81,7 +166,7 @@ class CreatePostFormCmp extends UIComponent {
 		};
 
 		$.get(
-			this.apiEndpoint,
+			this.apiUrl,
 			req,
 			res => this.submitSuccess(res),
 			'json'
@@ -131,6 +216,7 @@ class CreatePostFormCmp extends UIComponent {
 }
 
 class UserStatsCmp extends UIComponent {
+	apiUrl;
 	$reportRows;
 
 	init() {
@@ -149,7 +235,7 @@ class UserStatsCmp extends UIComponent {
 			params: {},
 		};
 		$.get(
-			this.apiEndpoint,
+			this.apiUrl,
 			req,
 			res => this.getReportSuccess(res),
 			'json'
@@ -184,52 +270,101 @@ class UserStatsCmp extends UIComponent {
 //--- /Component classes---//
 
 
-function initLoadingInd($body) {
-	$body.find('.loading-wrap:not(:has(> .loading))').append(`
-		<div class="loading">
-			<div class="loading-overlay d-flex justify-content-center align-items-center">
-				<i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
-			</div>
-		</div>
-	`);
-}
+//--- Services ---//
 
-function loadingInd($el, done = false, animDur = 50) {
-	const $loading = $el.find('.loading');
-	if (done) {
-		$loading.fadeOut(animDur);
-	} else {
-		$loading.fadeIn(animDur);
+class FormService {
+	_$form;
+	_$submitBtn;
+	_disabled = false;
+	_paramsContainer;
+	_defaultParams = {
+		selectors: { form: '', submitBtn: '' },
+		onSubmit: null,
+	};
+
+	constructor(paramsContainer) {
+		paramsContainer.params(this._defaultParams);
+		this._paramsContainer = paramsContainer;
+	}
+
+	get $form() {
+		return this.$form;
+	}
+
+	get $submitBtn() {
+		return this.$submitBtn;
+	}
+
+	get disabled() {
+		return this._disabled;
+	}
+
+	init(params) {
+		this.initElements(params?.selectors);
+		this.params(params);
+	}
+
+	initElements(selectors) {
+		if (selectors?.form) {
+			const $form = $(selectors.form);
+			if (!$form.length) throw new Error(`Selector "${selectors.form}" not found`);
+			$form.submit(ev => {
+				ev.preventDefault();
+				if (!this.disabled) this.submit();
+			});
+			this.$form = $form;
+		}
+		if (selectors?.submitBtn) {
+			this.$submitBtn = $(selectors.submitBtn);
+			if (!this.$submitBtn.length) throw new Error(`Selector "${selectors.form}" not found`);
+		}
+	}
+
+	params(params) {
+		return this._paramsContainer.params(params);
+	}
+
+	param(property, value) {
+		return this._paramsContainer.param(property, value);
+	}
+
+	disable($el, enable = false) {
+		this.disabled = !enable;
+		this.$submitBtn?.prop('disabled', this.disabled);
 	}
 }
+//--- /Services ---//
 
-function ajaxError(err) {
-	console.error(err);
-	alert(err.message);
-}
-
-function ajaxFail() {
-	alert('Server error!');
-}
 
 $(function () {
 
-	const apiURL = 'api/';
-	const loadingFadeInDur = 50;
-	const loadingFadeOutDur = 200;
+	const apiUrl = 'api/';
 
 	const $body = $('body');
-	initLoadingInd($body);
+	UIComponent.initLoading($body);
 
 	const componentsConfig = [
-		{ view: 'create-post-form', ctor: CreatePostFormCmp, apiEndpoint: apiURL },
-		{ view: 'user-stats', ctor: UserStatsCmp, apiEndpoint: apiURL },
+		{
+			view: 'create-post-form',
+			ctor: CreatePostFormCmp,
+			dependencies: {
+				form: new FormService(new ParamsContainer),
+				apiUrl,
+			}
+		},
+		{
+			view: 'user-stats',
+			ctor: UserStatsCmp,
+			dependencies: {
+				apiUrl,
+			}
+		},
 	];
 	const cmpInstances = [];
 
 	for (const cfg of componentsConfig) {
 		$body.find(`[data-view="${cfg.view}"]`).each((i, el) => {
-			const cmp = new cfg.ctor($(this), cfg.apiEndpoint);
+			const cmp = new cfg.ctor($(this), cfg.dependencies);
 			cmp.init();
 			cmpInstances.push(cmp);
 		});
@@ -248,7 +383,7 @@ $(function () {
 
 	//fetch data
 	$postsContent.find('[data-action="fetch-data"]').click(() => {
-		loadingInd($postsContent);
+		UIComponent.loading($postsContent);
 		fetchData(apiURL);
 	});
 
@@ -264,7 +399,7 @@ $(function () {
 			'json'
 		).fail(() => ajaxFail())
 			.always(() => {
-				loadingInd($postsContent, true, loadingFadeOutDur);
+				UIComponent.loading($postsContent, true);
 			});
 	}
 

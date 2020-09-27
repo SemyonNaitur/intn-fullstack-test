@@ -24,12 +24,12 @@ class DBUtil
 	public function __construct($db_config)
 	{
 		if ($db_config instanceof PDO) {
-			$this->pdo = $db_config;
+			$this->set_connection($db_config);
 		} elseif (is_array($db_config)) {
 			$this->config = $cfg = array_merge($this->db_config, $db_config);
 
 			try {
-				$this->pdo = self::PDO($cfg);
+				$this->set_connection(self::PDO($cfg));
 			} catch (PDOException $e) {
 				$this->db_exception($e);
 			}
@@ -77,9 +77,9 @@ class DBUtil
 	 * @param 	string 			$table
 	 * @return 	bool
 	 */
-	public function is_unique($value, string $field, string $table = null): bool
+	public function is_unique($value, string $field, $table = ''): bool
 	{
-		$table ??= $this->table;
+		$table = $table ?: $this->table;
 		$col = $this->field_to_column($field) ?: $field;
 		$sql = "SELECT 1 FROM $table WHERE $col=? LIMIT 1";
 		$stmt = $this->pdo->prepare($sql);
@@ -110,6 +110,11 @@ class DBUtil
 		throw $e;
 	}
 
+	public function set_connection($db)
+	{
+		$this->pdo = $db;
+	}
+
 	public function get_connection()
 	{
 		return $this->pdo;
@@ -119,15 +124,17 @@ class DBUtil
 	 * Removes unwanted fields from given record.
 	 * 
 	 * @param 	array 	$record
-	 * @param 	array 	$allowed optional wanted fields list
+	 * @param 	array 	$allowed optional, wanted fields list
 	 * @return 	array 	new filtered array
 	 */
-	public function filter_fields(array $record, array $allowed = null): array
+	public function filter_fields(array $record, $allowed = []): array
 	{
-		$allowed ??= array_keys($this->fields);
+		$allowed = $allowed ?: array_keys($this->fields);
 		return array_filter(
 			$record,
-			fn ($k) => in_array($k, $allowed),
+			function ($k) use ($allowed) {
+				return in_array($k, $allowed);
+			},
 			ARRAY_FILTER_USE_KEY
 		);
 	}

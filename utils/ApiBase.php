@@ -19,7 +19,7 @@ abstract class ApiBase
     public function __construct(array $input)
     {
         $this->input = $input;
-        $this->response = new ApiResponse();
+        $this->set_response(new ApiResponse());
     }
 
     public function run()
@@ -31,7 +31,7 @@ abstract class ApiBase
             if (!method_exists($this, $method)) {
                 $this->error("Unsuported method: $method.", 'UNSUPORTED_METHOD');
             } else {
-                $this->$method($this->input['params'] ?? [], $this->response);
+                $this->$method($this->input['params'] ?? []);
             }
         }
         $this->output();
@@ -52,37 +52,63 @@ abstract class ApiBase
         return $this->response;
     }
 
-    protected function success($data = null, $msg = '', ApiResponse $resp = null)
+    public function check_missing(array $params, array $required)
     {
-        $resp ??= $this->response;
+        return array_filter($required, function ($v) use ($params) {
+            return !isset($params[$v]);
+        });
+    }
+
+    protected function success($data = null, $msg = '', $continue = false)
+    {
+        $resp = $this->response;
         $resp->status = 'OK';
         $resp->message = $msg;
         $resp->data = $data;
+        $this->output();
     }
 
-    protected function error($msg = '', $status = '', ApiResponse $resp = null)
+    protected function error($msg = '', $status = '', $continue = false)
     {
-        $resp ??= $this->response;
+        $resp = $this->response;
         $resp->status = (empty($status)) ? 'ERR.' : $status;
         $resp->message = $msg;
+        if (!$continue) $this->output();
     }
 
     /**
-     * @return array deeply merged error bag
+     * For *non user* input.
+     * 
+     * @param   array   $names
+     * @return  void
      */
-    protected function validation_fail(array $error_bag, $msg = '', ApiResponse $resp = null)
+    protected function params_error(array $names, $continue = false)
     {
-        $resp ??= $this->response;
-        $resp->status = 'VALIDATION_FAIL';
-        $resp->message = (empty($msg)) ? 'Validation failed.' : $msg;
-        $resp->data['errors'] = array_merge_recursive(($resp->data['errors'] ?? []), $error_bag);
-        return $resp->data['errors'];
+        $msg = 'Missing or invalid params: ' . implode(', ', $names) . '.';
+        $this->error($msg, 'PARAMS_ERR', $continue);
     }
 
-    protected function output()
+    /**
+     * For *user* input.
+     * 
+     * @param   array       $error_bag
+     * @param   string      $msg
+     * @return  array|void  deeply merged error bag if continue = true
+     */
+    protected function validation_fail(array $error_bag, $continue = false)
+    {
+        $resp = $this->response;
+        $resp->status = 'VALIDATION_FAIL';
+        $resp->message = 'Validation failed.';
+        $resp->data['errors'] = array_merge_recursive(($resp->data['errors'] ?? []), $error_bag);
+        return ($continue) ? $resp->data['errors'] : $this->output();;
+    }
+
+    protected function output(ApiResponse $resp = null)
     {
         header('Content-type: application/json');
-        $resp = ($this->input['raw_response'] ?? 0) ? $this->response->data : $this->response;
+        $resp ??= $this->response;
+        $resp = ($this->input['raw_response'] ?? 0) ? $resp->data : $resp;
         echo json_encode($resp);
         die;
     }

@@ -1,4 +1,4 @@
-<div id="postsContent" class="container mt-5 loading-wrap">
+<div id="postsContent" class="container mt-5 loading-wrap" data-load="posts-content">
 
     <div class="card">
         <div class="card-body">

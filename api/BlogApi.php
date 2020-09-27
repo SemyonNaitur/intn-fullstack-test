@@ -1,6 +1,5 @@
 <?php
 require_once UTILS_DIR . '/ApiBase.php';
-require_once UTILS_DIR . '/Validator.php';
 
 require_once MODELS_DIR . '/Post.php';
 require_once MODELS_DIR . '/User.php';
@@ -9,17 +8,19 @@ class BlogApi extends ApiBase
 {
 	protected DBUtil $db;
 	protected CURLUtil $curl;
+	protected Validator $validator;
 
 	protected User $user;
 	protected Post $post;
 
 	protected $data_url = 'https://jsonplaceholder.typicode.com';
 
-	function __construct(array $input, DBUtil $db, CURLUtil $curl)
+	function __construct(array $input, DBUtil $db, CURLUtil $curl, Validator $validator)
 	{
 		parent::__construct($input);
 		$this->db = $db;
 		$this->curl = $curl;
+		$this->validator = $validator;
 		$this->user = new User($db->get_connection());
 		$this->post = new Post($db->get_connection());
 		$this->post->debug = $this->user->debug = $this->curl->debug = DEBUG;
@@ -27,16 +28,16 @@ class BlogApi extends ApiBase
 
 	//--- API methods ---//
 
-	public function fetch_remote_data(array $params, ApiResponse $resp)
+	public function fetch_remote_data(array $params)
 	{
-		$url = $this->data_url;
 
 		$data = [
 			'inserted_users' => 0,
 			'inserted_posts' => 0,
 		];
-		$err = '';
+		$err = null;
 
+		$url = $this->data_url;
 		$res = $this->fetch_users($url);
 		if (!($err = $res['error'])) {
 			$data['inserted_users'] = $res['inserted'];
@@ -49,56 +50,57 @@ class BlogApi extends ApiBase
 			}
 		}
 
-		if ($err) {
-			$this->error($err);
-		} else {
-			$this->success($data);
-		}
+		($err) ? $this->error($err) : $this->success($data);
 	}
 
-	public function create_user(array $params, ApiResponse $resp)
+	public function create_user(array $params)
 	{
-		if ($this->validate_user($params['user'])) {
-			$res = $this->user->create($params['user']);
-			if ($res['error']) {
-				$this->error($res['error']);
-			} else {
-				$this->success($res['user']);
+		$data = $err = null;
+		if (!($missing = $this->check_missing($params, ['user']))) {
+			if ($this->validate_user($params['user'])) {
+				$res = $this->user->create($params['user']);
+				if (!($err = $res['error'])) {
+					$data = $res['record'];
+				}
 			}
 		}
+		if ($missing) $this->params_error($missing);
+		if ($err) $this->error($err);
+		if ($error_bag = $this->validator->get_error_bag()) $this->validation_fail($error_bag);
+		$this->success($data);
 	}
 
-	public function create_post(array $params, ApiResponse $resp)
+	public function create_post(array $params)
 	{
 		try {
 			$db = $this->db;
 			$transaction = false;
+			$err = null;
+			$error_bag = null;
 
 			$user = $params['user'];
 			$user['id'] = (($user['id'] ?? 0) > 0) ? $user['id'] : null;
 			$user['email'] = trim(($user['email'] ?? ''));
 
 			$post = $params['post'];
-			unset($post['id']);
-
-			$err = '';
+			$post['id'] = null;
 
 			if (!$user['id']) {
-				$db->begin_transaction();
-				$transaction = true;
+				$this->validate_user($user);
+			}
+			$this->validate_post($post);
 
-				if (!$this->validate_user($user)) {
+			if (!($error_bag = $this->validator->get_error_bag())) {
+				if (!$user['id']) {
+					$db->begin_transaction();
+					$transaction = true;
 					$res = $this->user->create($user);
 					if (!($err = $res['error'])) {
 						$user = $res['record'];
 					}
 				}
-			}
 
-			if (!$err) {
-				$post['userId'] = ($user['id'] > 0) ? $user['id'] : null;
-
-				if (!$this->validate_post($post)) {
+				if ($post['userId'] = $user['id']) {
 					$res = $this->post->create($post);
 					if (!($err = $res['error'])) {
 						$post = $res['record'];
@@ -106,7 +108,9 @@ class BlogApi extends ApiBase
 				}
 			}
 
-			if (empty($post['id'])) {
+			if ($error_bag) {
+				$this->validation_fail($error_bag);
+			} elseif (!$post['id']) {
 				if ($transaction) $db->rollback();
 				$this->error($err);
 			} else {
@@ -118,7 +122,7 @@ class BlogApi extends ApiBase
 		}
 	}
 
-	public function user_stats(array $params, ApiResponse $resp)
+	public function user_stats(array $params)
 	{
 		$res = $this->post->user_stats();
 		if ($res['error']) {
@@ -168,33 +172,19 @@ class BlogApi extends ApiBase
 
 	protected function validate_user(array $user)
 	{
-		$error_bag = [];
 		$rules = [
-			'name' => 'required|string',
-			'email' => 'required|string',
+			'name:Name' => 'required|string',
+			'email:Email' => 'required|unique:users.email',
 		];
-		if (($valid = Validator::validate($user, $rules)) !== true) {
-			$error_bag = $this->validation_fail($valid);
-		}
-		if (empty($error_bag['email'])) {
-			if (!$this->user->is_unique($user['email'], 'email')) {
-				$error_bag = $this->validation_fail(['email' => ['Email already exists']]);
-			}
-		}
-		return $error_bag;
+		return $this->validator->validate($user, $rules);
 	}
 
 	protected function validate_post(array $post)
 	{
-		$error_bag = [];
 		$rules = [
-			'userId' => 'required|integer',
-			'title' => 'required',
-			'body' => 'required',
+			'title:Title' => 'required',
+			'body:Body' => 'required',
 		];
-		if (($valid = Validator::validate($post, $rules)) !== true) {
-			$error_bag = $this->validation_fail($valid);
-		}
-		return $error_bag;
+		return $this->validator->validate($post, $rules);
 	}
 }
