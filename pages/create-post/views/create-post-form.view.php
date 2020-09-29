@@ -9,7 +9,7 @@
                         <label>Name</label>
                         <input type="text" data-input="name" class="form-control">
                     </div>
-                    <div class="form-group loading-wrap">
+                    <div class="form-group">
                         <label>Email</label>
                         <input type="text" data-input="email" class="form-control">
                     </div>
