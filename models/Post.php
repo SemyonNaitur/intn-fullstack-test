@@ -11,6 +11,7 @@ class Post extends DBUtil
             'type' => 'integer',
         ],
         'userId' => [
+            'column' => 'user_id',
             'type' => 'integer',
             'required' => true,
         ],
@@ -87,7 +88,8 @@ class Post extends DBUtil
             $tbl = $this->table;
             $pk = $this->primary_key;
 
-            $sql = "SELECT * FROM $tbl WHERE $pk=? LIMIT 1";
+            $select = $this->cols_as_fields();
+            $sql = "SELECT $select FROM $tbl WHERE $pk=? LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$id]);
             $ret['row'] = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -104,7 +106,8 @@ class Post extends DBUtil
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $sql = "SELECT * FROM $tbl WHERE user_id=?";
+            $select = $this->cols_as_fields();
+            $sql = "SELECT $select FROM $tbl WHERE user_id=?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$user_id]);
             $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -121,7 +124,8 @@ class Post extends DBUtil
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $sql = "SELECT * FROM $tbl WHERE title LIKE :search OR body LIKE :search";
+            $select = $this->cols_as_fields();
+            $sql = "SELECT $select FROM $tbl WHERE title LIKE :search OR body LIKE :search";
             $stmt = $pdo->prepare($sql);
             $stmt->execute(['search' => "%$search%"]);
             $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -138,7 +142,8 @@ class Post extends DBUtil
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $sql  = "SELECT user_id, ROUND((COUNT(*) / 12), 2) AS monthly_average, ROUND((COUNT(*) / (365/7)), 2) AS weekly_average ";
+            $select = $this->cols_as_fields(['userId']);
+            $sql  = "SELECT $select, ROUND((COUNT(*) / 12), 2) AS monthlyAvg, ROUND((COUNT(*) / (365/7)), 2) AS weeklyAvg ";
             $sql .= "FROM $tbl GROUP BY user_id, YEAR(created_at) ORDER BY user_id";
             $ret['result'] = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             return $ret;

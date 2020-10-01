@@ -173,7 +173,7 @@ class BlogApi extends ApiBase
 	protected function validate_user(array $user)
 	{
 		$rules = [
-			'name:Name' => 'required|string',
+			'name:Name' => 'required|string|min_length:2',
 			'email:Email' => 'required|unique:users.email',
 		];
 		return $this->validator->validate($user, $rules);
@@ -182,8 +182,8 @@ class BlogApi extends ApiBase
 	protected function validate_post(array $post)
 	{
 		$rules = [
-			'title:Title' => 'required',
-			'body:Body' => 'required',
+			'title:Title' => 'required|min_length:2',
+			'body:Body' => 'required|min_length:2',
 		];
 		return $this->validator->validate($post, $rules);
 	}

@@ -14,14 +14,14 @@
                     <label>Search By</label>
                 </div>
                 <div class="form-group">
-                    <select class="form-control" data-input="search-by">
+                    <select class="form-control" data-field="search-by">
                         <option value="id">id</option>
                         <option value="user_id">user id</option>
                         <option value="content">content</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" data-input="search-param">
+                    <input type="text" class="form-control" data-field="search-param">
                 </div>
                 <div class="form-group">
                     <button class="btn btn-primary" data-action="search">Search</button>
