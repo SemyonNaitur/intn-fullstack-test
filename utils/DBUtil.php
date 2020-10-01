@@ -69,6 +69,21 @@ class DBUtil
 		return $this->columns[$column] ?? false;
 	}
 
+	protected function cols_as_fields(array $fields = null)
+	{
+		$fields ??= array_keys($this->fields);
+		$fields = array_map(
+			function ($field) {
+				if (!($col = $this->field_to_column($field))) {
+					throw new Exception("Unknown field: $field");
+				}
+				return "$this->table.$col AS $field";
+			},
+			$fields
+		);
+		return implode(', ', $fields);
+	}
+
 	/**
 	 * Checks if the value axists in the table
 	 * 

@@ -14,7 +14,7 @@ define('PAGES_DIR', __DIR__ . '/pages');
 //---  DB ---//
 define('DB_CONFIG', [
     'host' => 'localhost',
-    'dbname' => 'intn_blog',
+    'dbname' => 'mvc_sandbox',
     'user' => 'root',
     'pass' => ''
 ]);

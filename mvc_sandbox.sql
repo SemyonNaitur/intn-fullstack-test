@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 20, 2020 at 11:08 AM
+-- Generation Time: Nov 29, 2020 at 12:02 PM
 -- Server version: 10.4.13-MariaDB
 -- PHP Version: 7.4.8
 
@@ -18,16 +18,16 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `intn_blog`
+-- Database: `mvc_sandbox`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `posts`
+-- Table structure for table `intn_posts`
 --
 
-CREATE TABLE `posts` (
+CREATE TABLE `intn_posts` (
   `id` int(20) UNSIGNED NOT NULL,
   `user_id` int(20) UNSIGNED NOT NULL,
   `title` varchar(255) NOT NULL,
@@ -39,10 +39,10 @@ CREATE TABLE `posts` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Table structure for table `intn_users`
 --
 
-CREATE TABLE `users` (
+CREATE TABLE `intn_users` (
   `id` int(20) UNSIGNED NOT NULL,
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
@@ -55,16 +55,16 @@ CREATE TABLE `users` (
 --
 
 --
--- Indexes for table `posts`
+-- Indexes for table `intn_posts`
 --
-ALTER TABLE `posts`
+ALTER TABLE `intn_posts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indexes for table `users`
+-- Indexes for table `intn_users`
 --
-ALTER TABLE `users`
+ALTER TABLE `intn_users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email_idx` (`email`);
 
@@ -73,15 +73,15 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `posts`
+-- AUTO_INCREMENT for table `intn_posts`
 --
-ALTER TABLE `posts`
+ALTER TABLE `intn_posts`
   MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT for table `intn_users`
 --
-ALTER TABLE `users`
+ALTER TABLE `intn_users`
   MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -89,10 +89,10 @@ ALTER TABLE `users`
 --
 
 --
--- Constraints for table `posts`
+-- Constraints for table `intn_posts`
 --
-ALTER TABLE `posts`
-  ADD CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `intn_posts`
+  ADD CONSTRAINT `intn_posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `intn_users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

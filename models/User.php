@@ -3,7 +3,7 @@ require_once UTILS_DIR . '/DBUtil.php';
 
 class User extends DBUtil
 {
-    protected $table = 'users';
+    protected $table = 'intn_users';
     protected $primary_key = 'id';
     protected $fields = [
         'id' => [

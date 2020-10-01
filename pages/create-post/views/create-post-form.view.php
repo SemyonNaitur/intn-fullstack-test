@@ -7,19 +7,19 @@
                 <form autocomplete="off">
                     <div class="form-group">
                         <label>Name</label>
-                        <input type="text" data-input="name" class="form-control">
+                        <input type="text" data-field="name" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="text" data-input="email" class="form-control">
+                        <input type="text" data-field="email" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Title</label>
-                        <input type="text" data-input="title" class="form-control">
+                        <input type="text" data-field="title" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Body</label>
-                        <textarea data-input="body" class="form-control"></textarea>
+                        <textarea data-field="body" class="form-control"></textarea>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary mb-2">Submit</button>

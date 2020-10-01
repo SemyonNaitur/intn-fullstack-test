@@ -11,12 +11,12 @@ class CreatePostFormCmp extends UIComponent {
 
 	setDependencies(dependencies) {
 		if (!(dependencies?.form instanceof FormUtil)) {
-			throw new TypeError('Missing dependency: form');
+			throw new TypeError('Invalid value for "form" dependency');
 		}
 		this.form = dependencies.form;
 
 		if (!dependencies?.apiUrl) {
-			throw new TypeError('Missing dependency: apiUrl');
+			throw new TypeError('Invalid value for "apiUrl" dependency');
 		}
 		this.apiUrl = dependencies.apiUrl;
 	}
@@ -66,14 +66,12 @@ class CreatePostFormCmp extends UIComponent {
 	submitSuccess(res) {
 		if (res.status != 'OK') {
 			if (res.status == 'VALIDATION_FAIL') {
-				// TODO:
-				alert('Validation failed!');
-				console.error(res.data.errors);
+				this.form.setErrors(res.data.errors);
 			} else {
 				this.ajaxError(res);
 			}
 		} else {
-			this.clearForm();
+			this.form.clear();
 			alert(`
 				Success!
 				User id: ${res.data.user.id}.
@@ -92,15 +90,15 @@ class CreatePostFormCmp extends UIComponent {
 
 	formGetUser() {
 		return {
-			name: this.form.getInput('name').val(),
-			email: this.form.getInput('email').val(),
+			name: this.form.getField('name').val(),
+			email: this.form.getField('email').val(),
 		};
 	}
 
 	formGetPost() {
 		return {
-			title: this.form.getInput('title').val(),
-			body: this.form.getInput('body').val(),
+			title: this.form.getField('title').val(),
+			body: this.form.getField('body').val(),
 		};
 	}
 }
@@ -108,6 +106,18 @@ class CreatePostFormCmp extends UIComponent {
 class UserStatsCmp extends UIComponent {
 	apiUrl;
 	$reportRows;
+
+	constructor($viewContainer, dependencies) {
+		super($viewContainer);
+		this.setDependencies(dependencies);
+	}
+
+	setDependencies(dependencies) {
+		if (!dependencies?.apiUrl) {
+			throw new TypeError('Missing dependency: apiUrl');
+		}
+		this.apiUrl = dependencies.apiUrl;
+	}
 
 	init() {
 		this._$viewContainer.css('min-height', '20rem');
@@ -148,9 +158,9 @@ class UserStatsCmp extends UIComponent {
 		data.map(row => {
 			const tr = `
 				<tr>
-					<td>${row.user_id}</td>
-					<td>${row.monthly_average}</td>
-					<td>${row.weekly_average}</td>
+					<td>${row.userId}</td>
+					<td>${row.monthlyAvg}</td>
+					<td>${row.weeklyAvg}</td>
 				</tr>
 			`;
 			this.$reportRows.append(tr);
@@ -167,12 +177,17 @@ $(function () {
 	const $body = $('body');
 	UIComponent.initLoading($body);
 
+	const formUtilDependencies = {
+		paramsContainer: new ParamsUtil(),
+		theme: new Bootstrap4FormTheme(),
+	};
+
 	const componentsConfig = [
 		{
 			view: 'create-post-form',
 			ctor: CreatePostFormCmp,
 			dependencies: {
-				form: new FormUtil(new ParamsUtil()),
+				form: new FormUtil(formUtilDependencies),
 				apiUrl,
 			}
 		},
@@ -198,8 +213,8 @@ $(function () {
 	const $postsContent = $body.find('#postsContent');
 
 	//json
-	const $searchBy = $postsContent.find('[data-input="search-by"]');
-	const $searchParam = $postsContent.find('[data-input="search-param"]');
+	const $searchBy = $postsContent.find('[data-field="search-by"]');
+	const $searchParam = $postsContent.find('[data-field="search-param"]');
 	$postsContent.find('[data-action="search"]').click(() => {
 		const url = `posts-json.php?${$searchBy.val()}=${$searchParam.val()}`;
 		window.open(url, '_blank');

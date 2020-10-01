@@ -55,11 +55,48 @@ class ParamsUtil {
 	}
 }
 
+class FormTheme {
+	_classes = {
+		valid: { input: '', msg: '' },
+		warning: { input: '', msg: '' },
+		invalid: { input: '', msg: '' },
+	};
+}
+
+class Bootstrap4FormTheme extends FormTheme {
+
+	constructor() {
+		super();
+		this._classes.valid = { input: 'is-valid', msg: 'valid-feedback' };
+		this._classes.invalid = { input: 'is-invalid', msg: 'invalid-feedback' };
+	}
+
+	fieldSetValid($el, msg = '') {
+		this.fieldSetValidation($el, msg, 'valid');
+	}
+
+	fieldSetInvalid($el, msg = '') {
+		this.fieldSetValidation($el, msg, 'invalid');
+	}
+
+	fieldSetValidation($el, msg = '', state = 'valid') {
+		const classes = this._classes[state];
+		if (!classes) throw new Error(`Invalid field validation state: ${state}`);
+		this.fieldResetValidation($el);
+		$el.addClass(classes.input);
+		$el.after(`<div class="${classes.msg}">${msg}</div>`);
+	}
+
+	fieldResetValidation($el) {
+		let classes = '';
+		['valid', 'invalid'].forEach(state => classes += this._classes[state].input + ' ');
+		$el.removeClass(classes);
+		$el.find('~ [class$="-feedback"]').remove();
+	}
+}
+
 class FormUtil {
 	static _id = 0;
-	static _themes = {
-		bootstrap4: { errMsg: 'invalid-feedback' },
-	};
 
 	_id;
 	_$form;
@@ -70,19 +107,28 @@ class FormUtil {
 	_defaultParams = {
 		selectors: { form: '', submitBtn: '' },
 		onSubmit: null,
-		theme: 'bootstrap4',
 	};
 	_paramHooks = {
 		selectors: val => this.initElements(val),
 		onSubmit: val => { if (typeof val !== 'function') throw new TypeError('Invalid "onSubmit" callback') },
-		theme: val => this.initTheme(val),
 	}
 
-	constructor(paramsContainer) {
+	constructor(dependencies) {
 		this._id = `${this.constructor.name}_${++this.constructor._id}`;
-		paramsContainer.params(this._defaultParams);
-		paramsContainer.setHooks(this._paramHooks);
-		this._paramsContainer = paramsContainer;
+
+		const p = dependencies?.paramsContainer;
+		if (!(p instanceof ParamsUtil)) {
+			throw new TypeError('Invalid value for "paramsContainer" dependency')
+		}
+		p.params(this._defaultParams);
+		p.setHooks(this._paramHooks);
+		this._paramsContainer = p;
+
+		const t = dependencies?.theme;
+		if (!(t instanceof FormTheme)) {
+			throw new TypeError('Invalid value for "theme" dependency')
+		}
+		this._theme = t;
 	}
 
 	get $form() {
@@ -98,8 +144,7 @@ class FormUtil {
 	}
 
 	get theme() {
-		const name = this.param('theme');
-		return this.constructor._themes[name];
+		return this._theme;
 	}
 
 	init(params) {
@@ -127,22 +172,6 @@ class FormUtil {
 		});
 
 		this._$form = $form;
-
-		this.initInputs();
-	}
-
-	initInputs($form) {
-		$form = $form || this.$form;
-		$form.find('[data-input]').each((i, el) => {
-			const $el = $(el);
-			const name = $el.attr('data-input');
-			let $err = $el.siblings('.invalid-feedback');
-			if (!$err.length) {
-				$err = $('<div class="invalid-feedback">');
-				$el.after($err);
-			}
-			$err.attr('data-error', name);
-		});
 	}
 
 	params(params) {
@@ -153,8 +182,12 @@ class FormUtil {
 		return this._paramsContainer.param(property, value);
 	}
 
-	getInput(name) {
-		return this.$form.find(`[data-input="${name}"]`);
+	getFields() {
+		return this.$form.find(`[data-field]`);
+	}
+
+	getField(name) {
+		return this.$form.find(`[data-field="${name}"]`);
 	}
 
 	disable(disable = true) {
@@ -162,12 +195,41 @@ class FormUtil {
 		this._$submitBtn?.prop('disabled', disable);
 	}
 
-	disableInput(name, disable = true) {
-		this.getInput(name).prop('disabled', disable);
+	disableField(name, disable = true) {
+		this.getField(name).prop('disabled', disable);
 	}
 
 	clear() {
-		this._$form.find('[data-input]').val('');
+		this._$form.find('[data-field]').val('');
+		this.resetErrors();
+	}
+
+	setErrors(errors) {
+		this.resetErrors();
+		for (const fieldName in errors) {
+			this.setError(fieldName, errors[fieldName]);
+		}
+	}
+
+	setError(fieldName, errors) {
+		const $el = this.getField(fieldName);
+		const msg = this._toHtml(errors.join('\n'));
+		this.theme.fieldSetInvalid($el, msg);
+	}
+
+	resetErrors() {
+		this.getFields().each((i, el) => {
+			this.resetError($(el));
+		});
+	}
+
+	resetError(field) {
+		const $field = (typeof field === 'string') ? this.getField(field) : field;
+		this.theme.fieldResetValidation($field);
+	}
+
+	_toHtml(str) {
+		return str?.replace?.(/\n/g, '<br>');
 	}
 }
 //--- /Utils ---//
