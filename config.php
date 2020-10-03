@@ -4,6 +4,7 @@ define('DEBUG', true);
 
 //--- file structure ---//
 define('UTILS_DIR', __DIR__ . '/utils');
+define('CONTROLLERS_DIR', __DIR__ . '/controllers');
 define('MODELS_DIR', __DIR__ . '/models');
 define('LIB_DIR', __DIR__ . '/lib');
 define('TEMPLATE_DIR', __DIR__ . '/template');
@@ -20,6 +21,9 @@ define('DB_CONFIG', [
 ]);
 //---  /DB ---//
 
+$routes = [
+    ['path' => '/print-request', 'method' => 'test/test::print_request'],
+];
 
 function exception_error_handler($severity, $message, $file, $line)
 {

@@ -1,0 +1,15 @@
+# Start rewrite engine
+RewriteEngine On
+
+# Prevent directory listings
+Options All -Indexes
+
+# Deny access to listing directory
+RewriteRule ^(application|system) - [F,L]
+
+# Check if file or directory exist
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# If file or directory not found go to index.php
+RewriteRule .* index.php/$0 [PT,L] 
