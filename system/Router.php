@@ -14,6 +14,21 @@ class Router
         $this->init_routes($routes);
     }
 
+    public static function parse_url($url)
+    {
+        $url = explode('?', $url);
+        $path = trim(preg_replace('/\/{2,}/', '/', $url[0]), '/'); // remove excess '/'
+        $query_string = $url[1] ?? null;
+        $query_params = [];
+        if ($query_string) {
+            foreach (explode('&', $url[1]) as $param) {
+                $param = explode('=', $param);
+                $query_params[$param[0]] = $param[1] ?? '';
+            }
+        }
+        return compact('path', 'query_string', 'query_params');
+    }
+
     /**
      * route config format:
      *      match condition - one of the 3 must be supplied:
@@ -24,6 +39,9 @@ class Router
      *      method:
      *          <path>/<controller>::<method>
      *          e.g., api/blog::create_post
+     * 
+     *      data:
+     *          extra data array, will be passed as is to the controller method
      */
     protected function init_routes(array $routes_config)
     {
@@ -39,6 +57,8 @@ class Router
                 throw new Exception("Missing or invalid \"method\" for route config at index $i");
             }
             $route['method'] = $method;
+
+            $route['data'] = (is_array($cfg['data'] ?? null)) ? $cfg['data'] : [];
 
             $cb = ($cfg['callback'] ?? null) ?: null;
             $regex = $cfg['regex'] ?? null;
@@ -58,7 +78,7 @@ class Router
                     throw new Exception("Invalid route path at index $i");
                 }
                 $route['path'] = $path;
-                $route['regex'] = $this->parse_path($path);
+                $route['regex'] = $this->parse_route_path($path);
                 if (trim($path, '/') === 'not-found') {
                     $this->route_404 = $route;
                 }
@@ -85,28 +105,13 @@ class Router
      * 
      * Leading/trailing '/'s are removed.
      */
-    protected function parse_path(string $path)
+    protected function parse_route_path(string $path)
     {
         $patt = trim($path, '/');
         $patt = preg_replace('/:([^\/]+)/', '(?<param_$1>[^/]+)', $patt); // parse params
         $patt = preg_replace('/\.{3}$/', '(?<param__rest_string>.+)?', $patt); // parse rest string
-        $patt = preg_quote($patt, '/');
+        $patt = str_replace('/', '\/', $patt);
         return "/^$patt$/";
-    }
-
-    protected function parse_url($url)
-    {
-        $url = explode('?', $url);
-        $path = trim(preg_replace('/\/{2,}/', '/', $url[0]), '/'); // remove excess '/'
-        $query_string = $url[1] ?? null;
-        $query_params = [];
-        if ($query_string) {
-            foreach (explode('&', $url[1]) as $param) {
-                $param = explode('=', $param);
-                $query_params[$param[0]] = $param[1] ?? '';
-            }
-        }
-        return compact('path', 'query_string', 'query_params');
     }
 
     /**
@@ -115,7 +120,7 @@ class Router
      */
     public function match_url($url)
     {
-        $ret = $match = $params = $route = null;
+        $match = $route = $params = null;
         $url_data = $this->parse_url($url);
         foreach ($this->routes as $route) {
             if (isset($route['regex'])) {
@@ -145,9 +150,8 @@ class Router
                 $params['rest_params'] = explode('/', $params['_rest_string']);
             }
             $params['query_params'] = $url_data['query_params'];
-            $ret = compact('route', 'params');
         }
 
-        return $ret;
+        return compact('route', 'params');
     }
 }

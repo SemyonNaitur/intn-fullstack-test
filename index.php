@@ -1,7 +1,10 @@
 <?php
-require_once 'config.php';
-require_once UTILS_DIR . '/helper.php';
-require_once UTILS_DIR . '/Router.php';
+
+define('ROOT_DIR', __DIR__);
+define('SYS_DIR', ROOT_DIR . '/system');
+
+require_once SYS_DIR . '/config.php';
+require_once APP_DIR . '/config.php';
 
 //$page = (empty($_GET['page'])) ? 'create-post' : $_GET['page'];
 
@@ -13,7 +16,10 @@ $path = $_SERVER['PATH_INFO'];
 if ($route) {
     [$controller_path, $method] = explode('::', $route['method']);
     $controller = load_controller($controller_path);
-    $controller->$method($params);
+    $controller->$method($params, $route['data']);
+} else {
+    http_response_code(404);
+    die('<h4>Page not found</h4>');
 }
 
 include TEMPLATE_DIR . '/footer.php';
