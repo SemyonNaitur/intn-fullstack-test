@@ -6,6 +6,7 @@ class Core
     private $dbs = [];
     private Request $request;
     private Router $router;
+    private DB $db;
     private Controller $controller;
 
     public function __construct(array $config = null)
@@ -14,7 +15,7 @@ class Core
         $this->router = new Router(['routes' => $config['routes']]);
 
         if (isset($config['db'])) {
-            $this->load_db($config['db']);
+            $this->db = $this->load_db($config['db']);
         }
     }
 
@@ -51,6 +52,8 @@ class Core
             throw new Exception("Failed to load controller: $file");
         }
         require_once $file;
-        $this->controller = (new $controller_class())->init($this);
+        $c = new $controller_class();
+        $c->init($this->request, $this->db);
+        $this->controller = $c;
     }
 }

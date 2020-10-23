@@ -15,7 +15,8 @@ class Request
 
     public static function url()
     {
-        return self::base() . $_SERVER['REQUEST_URI'];
+        $q = (empty($_SERVER['QUERY_STRING'])) ? '' : "?$_SERVER[QUERY_STRING]";
+        return self::base() . $_SERVER['PATH_INFO'] . $q;
     }
 
     public static function path()

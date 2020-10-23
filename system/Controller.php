@@ -3,15 +3,17 @@
 class Controller
 {
 
-    private Core $core;
+    protected Request $request;
+    protected DB $db;
 
     public function __construct()
     {
     }
 
-    public function init(Core &$core)
+    public function init(Request &$request, DB $db)
     {
-        $this->core = &$core;
+        $this->request = &$request;
+        $this->db = &$db;
         return $this;
     }
 }
