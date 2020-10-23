@@ -1,6 +1,6 @@
 <?php
 
-class DBUtil
+class DB
 {
 	private $db_config = [
 		'host' => '',

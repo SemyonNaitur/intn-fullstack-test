@@ -2,20 +2,25 @@
 
 class Request
 {
-    public static function http_host()
+    public static function host()
     {
         return 'http' . rtrim((isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "$_SERVER[HTTP_HOST]", '/');
     }
 
-    public static function base_url()
+    public static function base()
     {
         $root_folder = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
-        return self::http_host() . $root_folder;
+        return self::host() . $root_folder;
     }
 
-    public static function request_url()
+    public static function url()
     {
-        return self::base_url() . $_SERVER['REQUEST_URI'];
+        return self::base() . $_SERVER['REQUEST_URI'];
+    }
+
+    public static function path()
+    {
+        return $_SERVER['PATH_INFO'];
     }
 
     public static function client_ip()

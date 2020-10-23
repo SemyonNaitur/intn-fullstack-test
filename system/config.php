@@ -10,8 +10,16 @@ define('PAGES_DIR', ROOT_DIR . '/pages');
 //--- /file structure ---//
 
 
+$app_config = [];
+function get_config(string $item = '')
+{
+    global $app_config;
+    return ($item) ? ($app_config[$item] ?? null) : $app_config;
+}
+
+
 spl_autoload_register(function ($class) {
-    include SYS_DIR . "/$class.php";
+    require_once SYS_DIR . "/$class.php";
 });
 
 
