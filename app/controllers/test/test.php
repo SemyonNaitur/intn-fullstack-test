@@ -25,6 +25,22 @@ class Test extends Controller
             $to = preg_replace('/\/(cat-id-prop)s\//', '/$1/', $this->request->url());
             $this->request->redirect($to);
         }
-        echo "Displaying properties <b>" . implode(',', $params['props']) . "</b> of item #$params[id] from category '$params[cat]'.";
+        echo "Displaying properties <b>" . implode(',', $params['rest_params']) . "</b> of item #$params[id] from category '$params[cat]'.";
+    }
+
+    public function regex_route(?array $params, ?array $data)
+    {
+        echo "Regex route works.";
+    }
+
+    public function callback_route(?array $params, ?array $data)
+    {
+        echo "Callback route " . (($params['works']) ? 'works' : '');
+    }
+
+    public function not_found(?array $params, ?array $data)
+    {
+        http_response_code(404);
+        die('Page not found.');
     }
 }
