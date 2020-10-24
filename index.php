@@ -18,6 +18,5 @@ if (!empty(get_config('db')['default']['dbname'])) {
 
 $core = new Core($core_cfg);
 $core->init();
-
-
+Logger::debug('asd');
 include TEMPLATE_DIR . '/footer.php';
