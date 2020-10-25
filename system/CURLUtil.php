@@ -1,5 +1,7 @@
 <?php
 
+namespace System;
+
 class CURLUtil
 {
 	public $debug = false;

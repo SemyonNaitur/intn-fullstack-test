@@ -1,4 +1,7 @@
 <?php
+
+namespace System;
+
 class Logger
 {
     private static $time_rgx = '/^\[(.+?)\]/';
@@ -25,7 +28,7 @@ class Logger
             $fh = fopen($file, 'a');
             fwrite($fh, $line);
             fclose($fh);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             if ($level == 'ERROR') {
                 $line = preg_replace(self::$time_rgx, '[' . get_config('app_name') . ']', $line);
                 error_log($line);

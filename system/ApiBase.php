@@ -1,5 +1,7 @@
 <?php
 
+namespace System;
+
 class ApiResponse
 {
     public $data = null;

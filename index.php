@@ -1,4 +1,7 @@
 <?php
+
+use System\{Core, Logger};
+
 define('ROOT_DIR', __DIR__);
 define('SYS_DIR', ROOT_DIR . '/system');
 

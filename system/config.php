@@ -18,8 +18,15 @@ function get_config(string $item = '')
 }
 
 
-spl_autoload_register(function ($class) {
-    require_once SYS_DIR . "/$class.php";
+spl_autoload_register(function ($class) { // https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader-examples.md
+    $pfx = 'System\\';
+    $len = strlen($pfx);
+    if (strncmp($pfx, $class, $len) !== 0) return;
+    $cls = substr($class, $len);
+    $file = SYS_DIR . '/' . str_replace('\\', '/', $cls) . '.php';
+    if (file_exists($file)) {
+        require $file;
+    }
 });
 
 

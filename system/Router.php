@@ -1,5 +1,7 @@
 <?php
 
+namespace System;
+
 class Router
 {
     protected $routes;
@@ -9,7 +11,7 @@ class Router
     {
         $routes = $config['routes'] ?? null;
         if (!is_Array($routes) || count($routes) < 1) {
-            throw new Error('Invalid routes array');
+            throw new \Error('Invalid routes array');
         }
         $this->init_routes($routes);
     }
@@ -49,12 +51,12 @@ class Router
         foreach ($routes_config as $i => $cfg) {
             $route = [];
             if (!is_array($cfg)) {
-                throw new Exception("Invalid route config array at index $i");
+                throw new \Exception("Invalid route config array at index $i");
             }
 
             $method = $cfg['method'] ?? null;
             if (!is_string($method) || count(explode('::', $method)) != 2) {
-                throw new Exception("Missing or invalid \"method\" for route config at index $i");
+                throw new \Exception("Missing or invalid \"method\" for route config at index $i");
             }
             $route['method'] = $method;
 
@@ -65,17 +67,17 @@ class Router
             $path = $cfg['path'] ?? null;
             if ($cb) {
                 if (!is_callable($cb)) {
-                    throw new Exception("Ivalid callback for route at index $i");
+                    throw new \Exception("Ivalid callback for route at index $i");
                 }
                 $route['callback'] = $cb;
             } elseif ($regex) {
                 if ($err = $this->invalid_regex($regex)) {
-                    throw new Exception("Ivalid regex pattern for route at index $i:\n$err");
+                    throw new \Exception("Ivalid regex pattern for route at index $i:\n$err");
                 }
                 $route['regex'] = $regex;
             } else {
                 if (!is_string($path)) {
-                    throw new Exception("Invalid route path at index $i");
+                    throw new \Exception("Invalid route path at index $i");
                 }
                 $route['path'] = $path;
                 $route['regex'] = $this->parse_route_path($path);
@@ -93,7 +95,7 @@ class Router
         try {
             preg_match($patt, null);
             return false;
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             return $e->getMessage();
         }
     }

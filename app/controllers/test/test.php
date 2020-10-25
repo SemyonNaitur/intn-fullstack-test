@@ -1,5 +1,7 @@
 <?php
 
+use System\Controller;
+
 class Test extends Controller
 {
 

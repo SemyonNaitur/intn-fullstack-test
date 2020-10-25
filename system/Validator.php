@@ -1,12 +1,14 @@
 <?php
 
+namespace System;
+
 class Validator
 {
-    protected ?DBUtil $db = null;
+    protected ?DB $db = null;
     protected ?array $error_bag = null;
     protected array $default_opts = ['clear_error_bag' => false];
 
-    public function __construct(DBUtil $db = null)
+    public function __construct(DB $db = null)
     {
         $this->set_db($db);
     }
@@ -58,7 +60,7 @@ class Validator
 
                     $func = $rule_name . '_rule';
                     if (!method_exists($this, $func)) {
-                        throw new Exception("Invalid rule name: $rule_name");
+                        throw new \Exception("Invalid rule name: $rule_name");
                     }
 
                     if (($valid = $this->$func($val, $params ?? '', $this->db)) !== true) {
@@ -79,7 +81,7 @@ class Validator
         }
     }
 
-    public function set_db(DBUtil $db)
+    public function set_db(DB $db)
     {
         $this->db = $db;
     }
@@ -135,7 +137,7 @@ class Validator
     public static function min_length_rule($val, $len)
     {
         if ((int) $len != $len || $len < 0) {
-            throw new Exception('Invalid length passed to "min_length" rule');
+            throw new \Exception('Invalid length passed to "min_length" rule');
         }
         return (mb_strlen((string) $val) >= $len) ?: "%s must be at least $len characters long.";
     }
@@ -146,12 +148,12 @@ class Validator
      * @param   DBUtil       $db
      * @return  bool|string
      */
-    public static function unique_rule($val, string $params, ?DBUtil $db)
+    public static function unique_rule($val, string $params, ?DB $db)
     {
-        if (!$db) throw new Exception('An instance of DBUtil is required');
+        if (!$db) throw new \Exception('An instance of DBUtil is required');
         [$tbl, $fld] = sscanf($params, '%[^.].%s');
-        if (!$tbl) throw new Exception('Params for "unique" rule are missing table name');
-        if (!$fld) throw new Exception('Params for "unique" rule are column table name');
+        if (!$tbl) throw new \Exception('Params for "unique" rule are missing table name');
+        if (!$fld) throw new \Exception('Params for "unique" rule are column table name');
         return $db->is_unique($val, $fld, $tbl) ?: '%s already exists.';
     }
     //--- /rules ---//

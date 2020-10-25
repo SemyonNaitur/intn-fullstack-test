@@ -1,5 +1,7 @@
 <?php
 
+namespace System;
+
 class DB
 {
 	private $db_config = [
@@ -23,18 +25,18 @@ class DB
 	 */
 	public function __construct($db_config)
 	{
-		if ($db_config instanceof PDO) {
+		if ($db_config instanceof \PDO) {
 			$this->set_connection($db_config);
 		} elseif (is_array($db_config)) {
 			$this->config = $cfg = array_merge($this->db_config, $db_config);
 
 			try {
 				$this->set_connection(self::PDO($cfg));
-			} catch (PDOException $e) {
+			} catch (\PDOException $e) {
 				$this->db_exception($e);
 			}
 		} else {
-			throw new Exception('Invalid config array!');
+			throw new \Exception('Invalid config array!');
 		}
 
 		$this->init_fields();
@@ -42,9 +44,9 @@ class DB
 
 	public static function PDO($cfg)
 	{
-		$pdo = new PDO("mysql:host=$cfg[host];dbname=$cfg[dbname]", $cfg['user'], $cfg['pass'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
-		$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+		$pdo = new \PDO("mysql:host=$cfg[host];dbname=$cfg[dbname]", $cfg['user'], $cfg['pass'], array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+		$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		$pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
 		return $pdo;
 	}
 
@@ -75,7 +77,7 @@ class DB
 		$fields = array_map(
 			function ($field) {
 				if (!($col = $this->field_to_column($field))) {
-					throw new Exception("Unknown field: $field");
+					throw new \Exception("Unknown field: $field");
 				}
 				return "$this->table.$col AS $field";
 			},
@@ -119,7 +121,7 @@ class DB
 
 	public function db_exception($e)
 	{
-		if ($e instanceof PDOException) {
+		if ($e instanceof \PDOException) {
 			return ['error' => ($this->debug) ? $e->getMessage() : 'DB Error.'];
 		}
 		throw $e;

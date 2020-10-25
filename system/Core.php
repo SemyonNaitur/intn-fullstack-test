@@ -1,5 +1,7 @@
 <?php
 
+namespace System;
+
 class Core
 {
 
@@ -39,7 +41,7 @@ class Core
             return $this->dbs[$name];
         }
         $cfg = get_config('db')[$name] ?? null;
-        if (!$cfg) throw new Exception("No configuration for database: $name");
+        if (!$cfg) throw new \Exception("No configuration for database: $name");
         $db = $this->dbs[$name] = new DB($cfg);
         return $db;
     }
@@ -49,7 +51,7 @@ class Core
         $controller_class = ltrim(strrchr($path, '/'), '/');
         $file = CONTROLLERS_DIR . "/$path.php";
         if (!file_exists($file)) {
-            throw new Exception("Failed to load controller: $file");
+            throw new \Exception("Failed to load controller: $file");
         }
         require_once $file;
         $c = new $controller_class();
