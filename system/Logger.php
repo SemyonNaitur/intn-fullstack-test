@@ -6,21 +6,21 @@ class Logger
 {
     private static $time_rgx = '/^\[(.+?)\]/';
 
-    public static function debug(string $msg)
+    public static function debug(string $message)
     {
-        static::log(__FUNCTION__, $msg);
+        static::log(__FUNCTION__, $message);
     }
 
-    public static function error(string $msg)
+    public static function error(string $message)
     {
-        static::log(__FUNCTION__, $msg);
+        static::log(__FUNCTION__, $message);
     }
 
-    public static function log(string $level, string $msg)
+    public static function log(string $level, string $message)
     {
         $level = strtoupper($level);
-        $format = trim(static::get_format(), "\n") . "\n";
-        $line = str_ireplace(['{level}', '{message}'], [$level, $msg], $format);
+        $format = trim(static::getFormat(), "\n") . "\n";
+        $line = strtr($format, ['{level}' => $level, '{message}' => $message]);
         $dir = get_config('log_dir');
         try {
             $name = get_config('app_name') . '_log.txt';
@@ -37,7 +37,7 @@ class Logger
         }
     }
 
-    protected static function get_format()
+    protected static function getFormat()
     {
         $f = get_config('log_format');
         $m = null;

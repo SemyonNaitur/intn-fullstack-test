@@ -17,17 +17,17 @@ class Core
         $this->router = new Router(['routes' => $config['routes']]);
 
         if (isset($config['db'])) {
-            $this->db = $this->load_db($config['db']);
+            $this->db = $this->loadDb($config['db']);
         }
     }
 
     public function init()
     {
-        ['route' => $route, 'params' => $params] = $this->router->match_url($this->request->path());
+        ['route' => $route, 'params' => $params] = $this->router->matchUrl($this->request->path());
 
         if ($route) {
             [$controller_path, $method] = explode('::', $route['method']);
-            $this->load_controller($controller_path);
+            $this->loadController($controller_path);
             $this->controller->$method($params, $route['data']);
         } else {
             http_response_code(404);
@@ -35,7 +35,7 @@ class Core
         }
     }
 
-    public function load_db(string $name)
+    public function loadDb(string $name)
     {
         if (isset($this->dbs[$name])) {
             return $this->dbs[$name];
@@ -46,7 +46,7 @@ class Core
         return $db;
     }
 
-    private function load_controller(string $path)
+    private function loadController(string $path)
     {
         $controller_class = ltrim(strrchr($path, '/'), '/');
         $file = CONTROLLERS_DIR . "/$path.php";

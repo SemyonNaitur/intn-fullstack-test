@@ -2,17 +2,6 @@
 
 namespace System;
 
-class ApiResponse
-{
-    public $data = null;
-
-    public function __construct($status = '', $message = '')
-    {
-        $this->status = $status;
-        $this->message = $message;
-    }
-}
-
 abstract class ApiBase
 {
     protected array $input;
@@ -21,7 +10,7 @@ abstract class ApiBase
     public function __construct(array $input)
     {
         $this->input = $input;
-        $this->set_response(new ApiResponse());
+        $this->setResponse(new ApiResponse());
     }
 
     public function run()
@@ -39,22 +28,22 @@ abstract class ApiBase
         $this->output();
     }
 
-    public function get_input(): array
+    public function getInput(): array
     {
         return $this->input;
     }
 
-    public function set_response(ApiResponse $resp)
+    public function setResponse(ApiResponse $resp)
     {
         $this->response = $resp;
     }
 
-    public function get_response(): ApiResponse
+    public function getResponse(): ApiResponse
     {
         return $this->response;
     }
 
-    public function check_missing(array $params, array $required)
+    public function checkMissing(array $params, array $required)
     {
         return array_filter($required, function ($v) use ($params) {
             return !isset($params[$v]);

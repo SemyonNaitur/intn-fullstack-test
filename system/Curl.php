@@ -2,11 +2,11 @@
 
 namespace System;
 
-class CURLUtil
+class Curl
 {
 	public $debug = false;
 
-	public function get_content(string $url)
+	public function getContent(string $url)
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);

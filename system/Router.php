@@ -13,10 +13,10 @@ class Router
         if (!is_Array($routes) || count($routes) < 1) {
             throw new \Error('Invalid routes array');
         }
-        $this->init_routes($routes);
+        $this->initRoutes($routes);
     }
 
-    public static function parse_url($url)
+    public static function parseUrl($url)
     {
         $url = explode('?', $url);
         $path = trim(preg_replace('/\/{2,}/', '/', $url[0]), '/'); // remove excess '/'
@@ -45,7 +45,7 @@ class Router
      *      data:
      *          extra data array, will be passed as is to the controller method
      */
-    protected function init_routes(array $routes_config)
+    protected function initRoutes(array $routes_config)
     {
         $routes = [];
         foreach ($routes_config as $i => $cfg) {
@@ -71,7 +71,7 @@ class Router
                 }
                 $route['callback'] = $cb;
             } elseif ($regex) {
-                if ($err = $this->invalid_regex($regex)) {
+                if ($err = $this->invalidRegex($regex)) {
                     throw new \Exception("Ivalid regex pattern for route at index $i:\n$err");
                 }
                 $route['regex'] = $regex;
@@ -80,7 +80,7 @@ class Router
                     throw new \Exception("Invalid route path at index $i");
                 }
                 $route['path'] = $path;
-                $route['regex'] = $this->parse_route_path($path);
+                $route['regex'] = $this->parseRoutePath($path);
                 if (trim($path, '/') === 'not-found') {
                     $this->route_404 = $route;
                 }
@@ -90,7 +90,7 @@ class Router
         $this->routes = $routes;
     }
 
-    protected function invalid_regex($patt)
+    protected function invalidRegex($patt)
     {
         try {
             preg_match($patt, null);
@@ -107,7 +107,7 @@ class Router
      * 
      * Leading/trailing '/'s are removed.
      */
-    protected function parse_route_path(string $path)
+    protected function parseRoutePath(string $path)
     {
         $patt = trim($path, '/');
         $patt = preg_replace('/:([^\/]+)/', '(?<param_$1>[^/]+)', $patt); // parse params
@@ -120,10 +120,10 @@ class Router
      * @param   string      $url - <path>[?<queryString>] - without domain.
      * @return  array|null
      */
-    public function match_url($url)
+    public function matchUrl($url)
     {
         $match = $route = $params = null;
-        $url_data = $this->parse_url($url);
+        $url_data = $this->parseUrl($url);
         foreach ($this->routes as $route) {
             if (isset($route['regex'])) {
                 if (preg_match($route['regex'], $url_data['path'], $match)) {

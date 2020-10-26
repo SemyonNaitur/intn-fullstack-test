@@ -2,9 +2,9 @@
 
 namespace System;
 
-class DB
+class Db
 {
-	private $db_config = [
+	private $dbConfig = [
 		'host' => '',
 		'dbname' => '',
 		'user'	=> '',
@@ -23,26 +23,26 @@ class DB
 	 * 
 	 * @param mixed a db config array or PDO instance
 	 */
-	public function __construct($db_config)
+	public function __construct($dbConfig)
 	{
-		if ($db_config instanceof \PDO) {
-			$this->set_connection($db_config);
-		} elseif (is_array($db_config)) {
-			$this->config = $cfg = array_merge($this->db_config, $db_config);
+		if ($dbConfig instanceof \PDO) {
+			$this->setConnection($dbConfig);
+		} elseif (is_array($dbConfig)) {
+			$this->config = $cfg = array_merge($this->dbConfig, $dbConfig);
 
 			try {
-				$this->set_connection(self::PDO($cfg));
+				$this->setConnection(self::PDO($cfg));
 			} catch (\PDOException $e) {
-				$this->db_exception($e);
+				$this->dbException($e);
 			}
 		} else {
 			throw new \Exception('Invalid config array!');
 		}
 
-		$this->init_fields();
+		$this->initFields();
 	}
 
-	public static function PDO($cfg)
+	public static function pdo($cfg)
 	{
 		$pdo = new \PDO("mysql:host=$cfg[host];dbname=$cfg[dbname]", $cfg['user'], $cfg['pass'], array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 		$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -50,7 +50,7 @@ class DB
 		return $pdo;
 	}
 
-	private function init_fields()
+	private function initFields()
 	{
 		$cols = [];
 		foreach ($this->fields as $fld => &$params) {
@@ -61,22 +61,22 @@ class DB
 		$this->columns = $cols;
 	}
 
-	protected function field_to_column(string $field)
+	protected function fieldToColumn(string $field)
 	{
 		return $this->fields[$field]['column'] ?? false;
 	}
 
-	protected function column_to_field(string $column)
+	protected function columnToField(string $column)
 	{
 		return $this->columns[$column] ?? false;
 	}
 
-	protected function cols_as_fields(array $fields = null)
+	protected function colsAsFields(array $fields = null)
 	{
 		$fields ??= array_keys($this->fields);
 		$fields = array_map(
 			function ($field) {
-				if (!($col = $this->field_to_column($field))) {
+				if (!($col = $this->fieldToColumn($field))) {
 					throw new \Exception("Unknown field: $field");
 				}
 				return "$this->table.$col AS $field";
@@ -94,17 +94,17 @@ class DB
 	 * @param 	string 			$table
 	 * @return 	bool
 	 */
-	public function is_unique($value, string $field, $table = ''): bool
+	public function isUnique($value, string $field, $table = ''): bool
 	{
 		$table = $table ?: $this->table;
-		$col = $this->field_to_column($field) ?: $field;
+		$col = $this->fieldToColumn($field) ?: $field;
 		$sql = "SELECT 1 FROM $table WHERE $col=? LIMIT 1";
 		$stmt = $this->pdo->prepare($sql);
 		$stmt->execute([$value]);
 		return !$stmt->fetchColumn();
 	}
 
-	public function begin_transaction()
+	public function beginTransaction()
 	{
 		$this->pdo->beginTransaction();
 	}
@@ -119,7 +119,7 @@ class DB
 		$this->pdo->rollback();
 	}
 
-	public function db_exception($e)
+	public function dbException($e)
 	{
 		if ($e instanceof \PDOException) {
 			return ['error' => ($this->debug) ? $e->getMessage() : 'DB Error.'];
@@ -127,12 +127,12 @@ class DB
 		throw $e;
 	}
 
-	public function set_connection($db)
+	public function setConnection($db)
 	{
 		$this->pdo = $db;
 	}
 
-	public function get_connection()
+	public function getConnection()
 	{
 		return $this->pdo;
 	}
@@ -144,7 +144,7 @@ class DB
 	 * @param 	array 	$allowed optional, wanted fields list
 	 * @return 	array 	new filtered array
 	 */
-	public function filter_fields(array $record, $allowed = []): array
+	public function filterFields(array $record, $allowed = []): array
 	{
 		$allowed = $allowed ?: array_keys($this->fields);
 		return array_filter(

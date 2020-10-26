@@ -1,7 +1,8 @@
 <?php
-require_once UTILS_DIR . '/DBUtil.php';
 
-class User extends DBUtil
+use System\DB;
+
+class User extends DB
 {
     protected $table = 'users';
     protected $primary_key = 'id';
@@ -43,7 +44,7 @@ class User extends DBUtil
             $stmt = $pdo->prepare($sql);
             $pdo->beginTransaction();
             foreach ($data as $record) {
-                $record = $this->filter_fields($record);
+                $record = $this->filterFields($record);
                 $stmt->execute($record);
             }
             $pdo->commit();
@@ -51,7 +52,7 @@ class User extends DBUtil
             return $ret;
         } catch (PDOException $e) {
             $pdo->rollback();
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 
@@ -61,7 +62,7 @@ class User extends DBUtil
             $ret = ['record' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
-            $record = $this->filter_fields($record, ['name', 'email']);
+            $record = $this->filterFields($record, ['name', 'email']);
 
             $sql = "INSERT INTO $tbl (name,email) VALUES (:name,:email)";
             $stmt = $pdo->prepare($sql);
@@ -70,7 +71,7 @@ class User extends DBUtil
             $ret['record'] = $record;
             return $ret;
         } catch (PDOException $e) {
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 }

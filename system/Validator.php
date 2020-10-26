@@ -5,12 +5,12 @@ namespace System;
 class Validator
 {
     protected ?DB $db = null;
-    protected ?array $error_bag = null;
-    protected array $default_opts = ['clear_error_bag' => false];
+    protected ?array $errorBag = null;
+    protected array $defaultOpts = ['clear_error_bag' => false];
 
     public function __construct(DB $db = null)
     {
-        $this->set_db($db);
+        $this->setDb($db);
     }
 
     /**
@@ -27,7 +27,7 @@ class Validator
      */
     public function validate(array $record, array $rules, $opts = [])
     {
-        $opts = $this->check_opts($opts);
+        $opts = $this->checkOpts($opts);
         $errors = [];
         foreach ($rules as $fld_name => $fld_rules) {
             [$fld_name, $label] = sscanf($fld_name, '%[^:]:%s');
@@ -74,26 +74,26 @@ class Validator
             }
         }
         if ($errors) {
-            $this->update_error_bag($errors);
+            $this->updateErrorBag($errors);
             return false;
         } else {
             return true;
         }
     }
 
-    public function set_db(DB $db)
+    public function setDb(DB $db)
     {
         $this->db = $db;
     }
 
-    public function get_error_bag()
+    public function getErrorBag()
     {
-        return $this->error_bag;
+        return $this->errorBag;
     }
 
-    public function clear_error_bag()
+    public function clearErrorBag()
     {
-        $this->error_bag = null;
+        $this->errorBag = null;
     }
 
 
@@ -134,7 +134,7 @@ class Validator
      * @param   string|int  $length
      * @return  bool|string
      */
-    public static function min_length_rule($val, $len)
+    public static function minLength_rule($val, $len)
     {
         if ((int) $len != $len || $len < 0) {
             throw new \Exception('Invalid length passed to "min_length" rule');
@@ -154,23 +154,23 @@ class Validator
         [$tbl, $fld] = sscanf($params, '%[^.].%s');
         if (!$tbl) throw new \Exception('Params for "unique" rule are missing table name');
         if (!$fld) throw new \Exception('Params for "unique" rule are column table name');
-        return $db->is_unique($val, $fld, $tbl) ?: '%s already exists.';
+        return $db->isUnique($val, $fld, $tbl) ?: '%s already exists.';
     }
     //--- /rules ---//
 
 
-    protected function check_opts(array $opts)
+    protected function checkOpts(array $opts)
     {
-        $opts = array_merge($this->default_opts, $opts);
+        $opts = array_merge($this->defaultOpts, $opts);
         if ($opts['clear_error_bag']) {
-            $this->clear_error_bag();
+            $this->clearErrorBag();
         }
         return $opts;
     }
 
-    protected function update_error_bag(array $errors)
+    protected function updateErrorBag(array $errors)
     {
-        $this->error_bag = array_merge_recursive($this->error_bag ?? [], $errors);
-        return $this->error_bag;
+        $this->errorBag = array_merge_recursive($this->errorBag ?? [], $errors);
+        return $this->errorBag;
     }
 }

@@ -1,8 +1,8 @@
 <?php
-require_once UTILS_DIR . '/DBUtil.php';
 
+use System\DB;
 
-class Post extends DBUtil
+class Post extends DB
 {
     protected $table = 'posts';
     protected $primary_key = 'id';
@@ -49,7 +49,7 @@ class Post extends DBUtil
             $stmt = $pdo->prepare($sql);
             $pdo->beginTransaction();
             foreach ($data as $row) {
-                $row = $this->filter_fields($row);
+                $row = $this->filterFields($row);
                 $stmt->execute($row);
             }
             $pdo->commit();
@@ -57,7 +57,7 @@ class Post extends DBUtil
             return $ret;
         } catch (PDOException $e) {
             $pdo->rollback();
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 
@@ -67,7 +67,7 @@ class Post extends DBUtil
             $ret = ['record' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
-            $record = $this->filter_fields($record, ['userId', 'title', 'body']);
+            $record = $this->filterFields($record, ['userId', 'title', 'body']);
 
             $sql = "INSERT INTO $tbl (user_id,title,body) VALUES (:userId,:title,:body)";
             $stmt = $pdo->prepare($sql);
@@ -76,11 +76,11 @@ class Post extends DBUtil
             $ret['record'] = $record;
             return $ret;
         } catch (PDOException $e) {
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 
-    public function search_by_id($id)
+    public function searchById($id)
     {
         try {
             $ret = ['row' => null, 'error' => ''];
@@ -88,67 +88,67 @@ class Post extends DBUtil
             $tbl = $this->table;
             $pk = $this->primary_key;
 
-            $select = $this->cols_as_fields();
+            $select = $this->colsAsFields();
             $sql = "SELECT $select FROM $tbl WHERE $pk=? LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$id]);
             $ret['row'] = $stmt->fetch(PDO::FETCH_ASSOC);
             return $ret;
         } catch (PDOException $e) {
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 
-    public function search_by_user_id($user_id)
+    public function searchByUserId($user_id)
     {
         try {
             $ret = ['result' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $select = $this->cols_as_fields();
+            $select = $this->colsAsFields();
             $sql = "SELECT $select FROM $tbl WHERE user_id=?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$user_id]);
             $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $ret;
         } catch (PDOException $e) {
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 
-    public function search_by_content($search)
+    public function searchByContent($search)
     {
         try {
             $ret = ['result' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $select = $this->cols_as_fields();
+            $select = $this->colsAsFields();
             $sql = "SELECT $select FROM $tbl WHERE title LIKE :search OR body LIKE :search";
             $stmt = $pdo->prepare($sql);
             $stmt->execute(['search' => "%$search%"]);
             $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $ret;
         } catch (PDOException $e) {
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 
-    public function user_stats()
+    public function userStats()
     {
         try {
             $ret = ['result' => null, 'error' => ''];
             $pdo = $this->pdo;
             $tbl = $this->table;
 
-            $select = $this->cols_as_fields(['userId']);
+            $select = $this->colsAsFields(['userId']);
             $sql  = "SELECT $select, ROUND((COUNT(*) / 12), 2) AS monthlyAvg, ROUND((COUNT(*) / (365/7)), 2) AS weeklyAvg ";
             $sql .= "FROM $tbl GROUP BY user_id, YEAR(created_at) ORDER BY user_id";
             $ret['result'] = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             return $ret;
         } catch (PDOException $e) {
-            return $this->db_exception($e);
+            return $this->dbException($e);
         }
     }
 }
