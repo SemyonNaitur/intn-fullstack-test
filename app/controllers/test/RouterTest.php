@@ -12,6 +12,11 @@ class RouterTest extends Controller
     public function printRequest(?array $params, ?array $data)
     {
         echo '<pre>';
+        if ($data['print_args']) {
+            print_r($params);
+            print_r($data);
+        }
+        print_r($_GET);
         print_r($_SERVER);
         echo '</pre>';
     }

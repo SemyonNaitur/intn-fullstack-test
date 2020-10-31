@@ -23,7 +23,7 @@ class Core
 
     public function init()
     {
-        ['route' => $route, 'params' => $params] = $this->router->matchUrl($this->request->path());
+        ['route' => $route, 'params' => $params] = $this->router->matchUrl($this->request->uri());
 
         if ($route) {
             [$controller_path, $method] = explode('::', $route['method']);

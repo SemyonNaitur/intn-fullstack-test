@@ -15,13 +15,18 @@ class Request
         return self::host() . $root_folder;
     }
 
-    public static function url()
+    public static function uri()
     {
         $q = (empty($_SERVER['QUERY_STRING'])) ? '' : "?$_SERVER[QUERY_STRING]";
-        return self::base() . $_SERVER['PATH_INFO'] . $q;
+        return $_SERVER['PATH_INFO'] . $q;
     }
 
-    public static function path()
+    public static function url()
+    {
+        return self::base() . self::uri();
+    }
+
+    public static function pathInfo()
     {
         return $_SERVER['PATH_INFO'];
     }

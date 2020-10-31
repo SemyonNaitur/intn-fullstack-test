@@ -16,19 +16,43 @@ class Router
         $this->initRoutes($routes);
     }
 
-    public static function parseUrl($url)
+    public static function parseUrl(string $url): array
     {
         $url = explode('?', $url);
         $path = trim(preg_replace('/\/{2,}/', '/', $url[0]), '/'); // remove excess '/'
-        $query_string = $url[1] ?? null;
-        $query_params = [];
+        $query_string = $url[1] ?? '';
+        $query_params = static::parseQueryString($query_string);
+        return compact('path', 'query_string', 'query_params');
+    }
+
+    /**
+     * Supports both array forms:
+     *      array=1&array=2
+     *      array[]=1&array[]=2
+     */
+    public static function parseQueryString(string $query_string)
+    {
+        $ret = [];
         if ($query_string) {
-            foreach (explode('&', $url[1]) as $param) {
-                $param = explode('=', $param);
-                $query_params[$param[0]] = $param[1] ?? '';
+            if (strpos($query_string, '[') !== false) {
+                parse_str($query_string, $ret);
+            } else {
+                foreach (explode('&', $query_string) as $param) {
+                    $param = explode('=', $param);
+                    $k = $param[0];
+                    $v = $param[1] ?? '';
+                    if (!isset($ret[$k])) {
+                        $ret[$k] = $v;
+                    } else {
+                        if (!is_array($ret[$k])) {
+                            $ret[$k] = [$ret[$k]];
+                        }
+                        $ret[$k][] = $v;
+                    }
+                }
             }
         }
-        return compact('path', 'query_string', 'query_params');
+        return $ret;
     }
 
     /**
