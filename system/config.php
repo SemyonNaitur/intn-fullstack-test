@@ -4,6 +4,7 @@
 define('APP_DIR', ROOT_DIR . '/app');
 define('CONTROLLERS_DIR', APP_DIR . '/controllers');
 define('MODELS_DIR', APP_DIR . '/models');
+define('VIEWS_DIR', APP_DIR . '/views');
 define('LIB_DIR', ROOT_DIR . '/lib');
 define('TEMPLATE_DIR', APP_DIR . '/template');
 define('PAGES_DIR', ROOT_DIR . '/pages');

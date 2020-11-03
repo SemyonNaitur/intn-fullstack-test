@@ -5,9 +5,10 @@ namespace System;
 class Core
 {
 
-    private $dbs = [];
     private Request $request;
     private Router $router;
+    private Loader $load;
+
     private DB $db;
     private Controller $controller;
 
@@ -15,9 +16,9 @@ class Core
     {
         $this->request = new Request();
         $this->router = new Router(['routes' => $config['routes']]);
-
+        $this->load = new Loader();
         if (isset($config['db'])) {
-            $this->db = $this->loadDb($config['db']);
+            $this->db = $this->load->db($config['db']);
         }
     }
 
@@ -27,41 +28,13 @@ class Core
 
         if ($route) {
             [$controller_path, $method] = explode('::', $route['method']);
-            $this->loadController($controller_path);
-            $this->controller->$method($params, $route['data']);
+            $c = $this->load->controller($controller_path);
+            $c->init($this->request, $this->db, $this->load);
+            $c->$method($params, $route['data']);
+            $this->controller = $c;
         } else {
             http_response_code(404);
             die('<h4>Page not found</h4>');
         }
-    }
-
-    /**
-     * Creates a Db instance, adds it to loaded dbs pool and return the instance.
-     * 
-     * @param   string  $name
-     * @return  Db
-     */
-    public function loadDb(string $name): Db
-    {
-        if (isset($this->dbs[$name])) {
-            return $this->dbs[$name];
-        }
-        $cfg = get_config('db')[$name] ?? null;
-        if (!$cfg) throw new \Exception("No configuration for database: $name");
-        $db = $this->dbs[$name] = new Db($cfg);
-        return $db;
-    }
-
-    private function loadController(string $path)
-    {
-        $controller_class = ltrim(strrchr($path, '/'), '/');
-        $file = CONTROLLERS_DIR . "/$path.php";
-        if (!file_exists($file)) {
-            throw new \Exception("Failed to load controller: $file");
-        }
-        require_once $file;
-        $c = new $controller_class();
-        $c->init($this->request, $this->db);
-        $this->controller = $c;
     }
 }
