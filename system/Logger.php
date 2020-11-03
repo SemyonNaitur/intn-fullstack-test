@@ -6,17 +6,33 @@ class Logger
 {
     private static $time_rgx = '/^\[(.+?)\]/';
 
-    public static function debug(string $message)
+    /**
+     * 
+     * @param   string $message
+     * @return  void
+     */
+    public static function debug(string $message): void
     {
         static::log(__FUNCTION__, $message);
     }
 
-    public static function error(string $message)
+    /**
+     * 
+     * @param   string $message
+     * @return  void
+     */
+    public static function error(string $message): void
     {
         static::log(__FUNCTION__, $message);
     }
 
-    public static function log(string $level, string $message)
+    /**
+     * 
+     * @param   string  $level
+     * @param   string  $message
+     * @return  void
+     */
+    public static function log(string $level, string $message): void
     {
         $level = strtoupper($level);
         $format = trim(static::getFormat(), "\n") . "\n";
@@ -37,7 +53,7 @@ class Logger
         }
     }
 
-    protected static function getFormat()
+    protected static function getFormat(): string
     {
         $f = get_config('log_format');
         $m = null;

@@ -16,6 +16,11 @@ class Router
         $this->initRoutes($routes);
     }
 
+    /**
+     * 
+     * @param   string  $url
+     * @return  array
+     */
     public static function parseUrl(string $url): array
     {
         $url = explode('?', $url);
@@ -29,8 +34,11 @@ class Router
      * Supports both array forms:
      *      array=1&array=2
      *      array[]=1&array[]=2
+     * 
+     * @param   string  $query_string
+     * @return  array
      */
-    public static function parseQueryString(string $query_string)
+    public static function parseQueryString(string $query_string): array
     {
         $ret = [];
         if ($query_string) {
@@ -68,8 +76,11 @@ class Router
      * 
      *      data:
      *          extra data array, will be passed as is to the controller method
+     * 
+     * @param   array[]     $routes_config
+     * @return  void
      */
-    protected function initRoutes(array $routes_config)
+    protected function initRoutes(array $routes_config): void
     {
         $routes = [];
         foreach ($routes_config as $i => $cfg) {
@@ -114,6 +125,11 @@ class Router
         $this->routes = $routes;
     }
 
+    /**
+     * 
+     * @param   string      $patt
+     * @return  bool|string
+     */
     protected function invalidRegex($patt)
     {
         try {
@@ -130,8 +146,11 @@ class Router
      * A trailing '/...' notation is transformed to '_restString' group.
      * 
      * Leading/trailing '/'s are removed.
+     * 
+     * @param   string  $path
+     * @return  string
      */
-    protected function parseRoutePath(string $path)
+    protected function parseRoutePath(string $path): string
     {
         $patt = trim($path, '/');
         $patt = preg_replace('/:([^\/]+)/', '(?<param_$1>[^/]+)', $patt); // parse params
@@ -141,10 +160,11 @@ class Router
     }
 
     /**
+     * 
      * @param   string      $url - <path>[?<queryString>] - without domain.
-     * @return  array|null
+     * @return  array
      */
-    public function matchUrl($url)
+    public function matchUrl($url): array
     {
         $match = $route = $params = null;
         $url_data = $this->parseUrl($url);

@@ -10,7 +10,7 @@ class Db
 		'user'	=> '',
 		'pass' => '',
 	];
-	protected $pdo;
+	protected \PDO $pdo;
 
 	protected $table = '';
 	protected $fields = [];
@@ -42,7 +42,7 @@ class Db
 		$this->initFields();
 	}
 
-	public static function pdo($cfg)
+	public static function pdo(array $cfg): \PDO
 	{
 		$pdo = new \PDO("mysql:host=$cfg[host];dbname=$cfg[dbname]", $cfg['user'], $cfg['pass'], array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 		$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -61,17 +61,34 @@ class Db
 		$this->columns = $cols;
 	}
 
+	/**
+	 * Converts field name to db column name
+	 * 
+	 * @return string|bool
+	 */
 	protected function fieldToColumn(string $field)
 	{
 		return $this->fields[$field]['column'] ?? false;
 	}
 
+	/**
+	 * Converts db column name to field name
+	 * 
+	 * @return string|bool
+	 */
 	protected function columnToField(string $column)
 	{
 		return $this->columns[$column] ?? false;
 	}
 
-	protected function colsAsFields(array $fields = null)
+	/**
+	 * Converts an array of field names to a string for select statements.
+	 * format: table_name.column_name AS fieldName
+	 * 
+	 * @param 	array 	$fields
+	 * @return 	string
+	 */
+	protected function colsAsFields(array $fields = null): string
 	{
 		$fields ??= array_keys($this->fields);
 		$fields = array_map(
@@ -127,12 +144,12 @@ class Db
 		throw $e;
 	}
 
-	public function setConnection($db)
+	public function setConnection(\PDO $db): void
 	{
 		$this->pdo = $db;
 	}
 
-	public function getConnection()
+	public function getConnection(): \PDO
 	{
 		return $this->pdo;
 	}

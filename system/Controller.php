@@ -6,13 +6,13 @@ class Controller
 {
 
     protected Request $request;
-    protected DB $db;
+    protected Db $db;
 
     public function __construct()
     {
     }
 
-    public function init(Request &$request, DB $db)
+    public function init(Request &$request, Db $db): Controller
     {
         $this->request = &$request;
         $this->db = &$db;

@@ -1,8 +1,10 @@
 <?php
 
-use System\DB;
+namespace App\Models;
 
-class Post extends DB
+use System\Db;
+
+class Post extends Db
 {
     protected $table = 'posts';
     protected $primary_key = 'id';
@@ -55,7 +57,7 @@ class Post extends DB
             $pdo->commit();
             $ret['inserted'] = count($data);
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $pdo->rollback();
             return $this->dbException($e);
         }
@@ -75,7 +77,7 @@ class Post extends DB
             $record['id'] = $pdo->lastInsertId();
             $ret['record'] = $record;
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             return $this->dbException($e);
         }
     }
@@ -92,9 +94,9 @@ class Post extends DB
             $sql = "SELECT $select FROM $tbl WHERE $pk=? LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$id]);
-            $ret['row'] = $stmt->fetch(PDO::FETCH_ASSOC);
+            $ret['row'] = $stmt->fetch(\PDO::FETCH_ASSOC);
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             return $this->dbException($e);
         }
     }
@@ -110,9 +112,9 @@ class Post extends DB
             $sql = "SELECT $select FROM $tbl WHERE user_id=?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$user_id]);
-            $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $ret['result'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             return $this->dbException($e);
         }
     }
@@ -128,9 +130,9 @@ class Post extends DB
             $sql = "SELECT $select FROM $tbl WHERE title LIKE :search OR body LIKE :search";
             $stmt = $pdo->prepare($sql);
             $stmt->execute(['search' => "%$search%"]);
-            $ret['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $ret['result'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             return $this->dbException($e);
         }
     }
@@ -145,9 +147,9 @@ class Post extends DB
             $select = $this->colsAsFields(['userId']);
             $sql  = "SELECT $select, ROUND((COUNT(*) / 12), 2) AS monthlyAvg, ROUND((COUNT(*) / (365/7)), 2) AS weeklyAvg ";
             $sql .= "FROM $tbl GROUP BY user_id, YEAR(created_at) ORDER BY user_id";
-            $ret['result'] = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+            $ret['result'] = $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             return $this->dbException($e);
         }
     }

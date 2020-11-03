@@ -1,5 +1,7 @@
 <?php
 
+//namespace App\Controllers\Test;
+
 use System\Controller;
 
 class RouterTest extends Controller

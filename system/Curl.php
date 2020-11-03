@@ -6,7 +6,7 @@ class Curl
 {
 	public $debug = false;
 
-	public function getContent(string $url)
+	public function getContent(string $url): array
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);

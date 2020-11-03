@@ -35,14 +35,20 @@ class Core
         }
     }
 
-    public function loadDb(string $name)
+    /**
+     * Creates a Db instance, adds it to loaded dbs pool and return the instance.
+     * 
+     * @param   string  $name
+     * @return  Db
+     */
+    public function loadDb(string $name): Db
     {
         if (isset($this->dbs[$name])) {
             return $this->dbs[$name];
         }
         $cfg = get_config('db')[$name] ?? null;
         if (!$cfg) throw new \Exception("No configuration for database: $name");
-        $db = $this->dbs[$name] = new DB($cfg);
+        $db = $this->dbs[$name] = new Db($cfg);
         return $db;
     }
 

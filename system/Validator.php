@@ -25,7 +25,7 @@ class Validator
      * @param   array   $rules
      * @return  bool    true on success
      */
-    public function validate(array $record, array $rules, $opts = [])
+    public function validate(array $record, array $rules, $opts = []): bool
     {
         $opts = $this->checkOpts($opts);
         $errors = [];
@@ -130,6 +130,7 @@ class Validator
     }
 
     /**
+     * 
      * @param   mixed       $val
      * @param   string|int  $length
      * @return  bool|string
@@ -143,9 +144,10 @@ class Validator
     }
 
     /**
+     * 
      * @param   mixed       $val
      * @param   string      $params format: table.column
-     * @param   DBUtil       $db
+     * @param   DBUtil      $db
      * @return  bool|string
      */
     public static function unique_rule($val, string $params, ?DB $db)
@@ -159,7 +161,7 @@ class Validator
     //--- /rules ---//
 
 
-    protected function checkOpts(array $opts)
+    protected function checkOpts(array $opts): array
     {
         $opts = array_merge($this->defaultOpts, $opts);
         if ($opts['clear_error_bag']) {
@@ -168,7 +170,7 @@ class Validator
         return $opts;
     }
 
-    protected function updateErrorBag(array $errors)
+    protected function updateErrorBag(array $errors): array
     {
         $this->errorBag = array_merge_recursive($this->errorBag ?? [], $errors);
         return $this->errorBag;

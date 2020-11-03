@@ -1,8 +1,10 @@
 <?php
 
-use System\DB;
+namespace App\Models;
 
-class User extends DB
+use System\Db;
+
+class User extends Db
 {
     protected $table = 'users';
     protected $primary_key = 'id';
@@ -50,7 +52,7 @@ class User extends DB
             $pdo->commit();
             $ret['inserted'] = count($data);
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $pdo->rollback();
             return $this->dbException($e);
         }
@@ -70,7 +72,7 @@ class User extends DB
             $record['id'] = $pdo->lastInsertId();
             $ret['record'] = $record;
             return $ret;
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             return $this->dbException($e);
         }
     }
