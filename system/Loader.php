@@ -2,28 +2,32 @@
 
 namespace System;
 
-use System\Controller;
-
 class Loader
 {
 
-    private $dbs = [];
-    private $models = [];
+    private $pool = [
+        'db' => [],
+        'model' => [],
+        'library' => [],
+    ];
 
     /**
      * Creates a Db instance, adds it to loaded dbs pool and returns the instance.
+     * Excepts an optional config array to merge into the default config, if exists.
      * 
      * @param   string  $name
+     * @param   array   $config
      * @return  Db
      */
-    public function db(string $name): Db
+    public function db(string $name, array $config = []): Db
     {
-        if (isset($this->dbs[$name])) {
-            return $this->dbs[$name];
+        if (isset($this->pool['db'][$name])) {
+            return $this->pool['db'][$name];
         }
-        $cfg = get_config('db')[$name] ?? null;
-        if (!$cfg) throw new \Exception("No configuration for database: $name");
-        $db = $this->dbs[$name] = new Db($cfg);
+        $defaults = get_config('db')[$name] ?? [];
+        $config = array_merge($defaults, $config);
+        if (!$config) throw new \Exception("No configuration for database: $name");
+        $db = $this->pool['db'][$name] = new Db($config);
         return $db;
     }
 
@@ -33,7 +37,27 @@ class Loader
      * @param   string  $path
      * @return  Controller
      */
-    public function controller(string $path): Controller
+    public function model(string $path): Controller
+    {
+        if (isset($this->pool['model'][$path])) {
+            return $this->pool['model'][$path];
+        }
+        $controller_class = ltrim(strrchr($path, '/'), '/');
+        $file = sprintf('%s/%s.php', MODELS_DIR, trim($path, '/'));
+        if (!file_exists($file)) {
+            throw new \Exception("Failed to load controller: $file");
+        }
+        include_once $file;
+        return new $controller_class();
+    }
+
+    /**
+     * Loads the requested controller class, creates an instance and returns it.
+     * 
+     * @param   string  $path
+     * @return  Controller
+     */
+    public function library(string $path)
     {
         $controller_class = ltrim(strrchr($path, '/'), '/');
         $file = sprintf('%s/%s.php', CONTROLLERS_DIR, trim($path, '/'));

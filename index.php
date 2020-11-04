@@ -6,7 +6,7 @@ define('ROOT_DIR', __DIR__);
 define('SYS_DIR', ROOT_DIR . '/system');
 
 require_once SYS_DIR . '/config.php';
-require_once APP_DIR . '/config.php';
+require_once APP_DIR . '/config/config.php';
 
 
 include TEMPLATE_DIR . '/header.php';

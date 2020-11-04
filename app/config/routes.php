@@ -1,9 +1,9 @@
 <?php
 
-$routes = [];
-
-
-$router_test_routes = [
+$app_config['routes'] = [
+    /**
+     * Router test routes.
+     */
     ['path' => '/print-request', 'method' => 'test/RouterTest::printRequest', 'data' => ['print_args' => true]],
     ['path' => 'cat-id-prop/:cat/:id/:prop', 'method' => 'test/RouterTest::catIdProp'],
     ['path' => 'cat-id-prop/:cat/:id/...', 'method' => 'test/RouterTest::catIdProps'],

@@ -2,7 +2,7 @@
 
 namespace System;
 
-class Controller
+abstract class Controller
 {
 
     protected Request $request;
