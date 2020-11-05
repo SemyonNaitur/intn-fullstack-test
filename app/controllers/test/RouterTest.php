@@ -1,6 +1,6 @@
 <?php
 
-//namespace App\Controllers\Test;
+namespace App\Controllers\Test;
 
 use System\Core\Controller;
 

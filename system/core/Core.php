@@ -48,12 +48,8 @@ class Core
      */
     public function loadController(string $path): Controller
     {
-        $controller_class = ltrim(strrchr($path, '/'), '/');
-        $file = sprintf('%s/%s.php', CONTROLLERS_DIR, trim($path, '/'));
-        if (!file_exists($file)) {
-            throw new \Exception("Failed to load controller: $file");
-        }
-        include_once $file;
+        $controller_class = get_config('controllers_path') . '/' . trim($path, '/');
+        $controller_class = str_replace('/', '\\', $controller_class);
         return new $controller_class();
     }
 }

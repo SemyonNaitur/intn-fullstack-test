@@ -8,6 +8,7 @@
 //--- /system file structure ---//
 
 //--- app file structure ---//
+define('APP_PATH', 'app');
 define('APP_DIR', ROOT_DIR . '/app');
 define('CONTROLLERS_DIR', APP_DIR . '/controllers');
 define('MODELS_DIR', APP_DIR . '/models');
@@ -19,7 +20,13 @@ define('TEMPLATE_DIR', APP_DIR . '/template');
 
 
 //--- app config ---//
-$app_config = [];
+$app_config = [
+    'controllers_path'  => APP_PATH . '/controllers',
+    'models_path'       => APP_PATH . '/models',
+    'views_path'        => APP_PATH . '/views',
+    'libraries_path'    => APP_PATH . '/libraries',
+];
+
 function get_config(string $item = '')
 {
     global $app_config;
@@ -28,7 +35,7 @@ function get_config(string $item = '')
 
 function base_url()
 {
-    return \System\Core\Request::base();
+    return System\Core\Request::base();
 }
 //--- /app config ---//
 
@@ -48,7 +55,7 @@ if (CUSTOM_AUTOLOADER) { // https://github.com/php-fig/fig-standards/blob/master
         }
     });
 } else { // https://www.php.net/manual/en/function.spl-autoload.php#92767
-    set_include_path(get_include_path() . PATH_SEPARATOR . SYS_DIR);
+    set_include_path(get_include_path() . PATH_SEPARATOR . ROOT_DIR);
     spl_autoload_extensions('.php');
     spl_autoload_register();
 }
