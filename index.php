@@ -1,6 +1,6 @@
 <?php
 
-use System\{Core, Logger};
+use System\Core\{Core, Request};
 
 define('ROOT_DIR', __DIR__);
 define('SYS_DIR', ROOT_DIR . '/system');

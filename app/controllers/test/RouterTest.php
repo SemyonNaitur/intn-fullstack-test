@@ -2,7 +2,7 @@
 
 //namespace App\Controllers\Test;
 
-use System\Controller;
+use System\Core\Controller;
 
 class RouterTest extends Controller
 {

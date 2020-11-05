@@ -1,14 +1,21 @@
 <?php
 
-//--- file structure ---//
+//--- system file structure ---//
+// define('LIBRARIES_DIR', ROOT_DIR . '/libraries');
+// define('LIBRARIES_DIR', ROOT_DIR . '/libraries');
+// define('TEMPLATE_DIR', APP_DIR . '/template');
+// define('PAGES_DIR', ROOT_DIR . '/pages');
+//--- /system file structure ---//
+
+//--- app file structure ---//
 define('APP_DIR', ROOT_DIR . '/app');
 define('CONTROLLERS_DIR', APP_DIR . '/controllers');
 define('MODELS_DIR', APP_DIR . '/models');
 define('VIEWS_DIR', APP_DIR . '/views');
 define('LIBRARIES_DIR', ROOT_DIR . '/libraries');
 define('TEMPLATE_DIR', APP_DIR . '/template');
-define('PAGES_DIR', ROOT_DIR . '/pages');
-//--- /file structure ---//
+// define('PAGES_DIR', ROOT_DIR . '/pages');
+//--- /app file structure ---//
 
 
 //--- app config ---//
@@ -18,6 +25,11 @@ function get_config(string $item = '')
     global $app_config;
     return ($item) ? ($app_config[$item] ?? null) : $app_config;
 }
+
+function base_url()
+{
+    return \System\Core\Request::base();
+}
 //--- /app config ---//
 
 
@@ -25,11 +37,12 @@ function get_config(string $item = '')
 define('CUSTOM_AUTOLOADER', 0);
 if (CUSTOM_AUTOLOADER) { // https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader-examples.md
     spl_autoload_register(function ($class) {
-        $pfx = 'System\\';
-        $len = strlen($pfx);
-        if (strncmp($pfx, $class, $len) !== 0) return;
-        $cls = substr($class, $len);
-        $file = SYS_DIR . '/' . str_replace('\\', '/', $cls) . '.php';
+        // $pfx = 'System\\';
+        // $len = strlen($pfx);
+        // if (strncmp($pfx, $class, $len) !== 0) return;
+        // $cls = substr($class, $len);
+        // $file = SYS_DIR . '/' . str_replace('\\', '/', $class) . '.php';
+        $file = ROOT_DIR . '/' . str_replace('\\', '/', $class) . '.php';
         if (file_exists($file)) {
             require $file;
         }

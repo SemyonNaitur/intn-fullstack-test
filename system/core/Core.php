@@ -1,6 +1,8 @@
 <?php
 
-namespace System;
+namespace System\Core;
+
+use System\Libraries\Db;
 
 class Core
 {
@@ -8,8 +10,7 @@ class Core
     private Request $request;
     private Router $router;
     private Loader $loader;
-
-    private DB $db;
+    private Db $db;
     private Controller $controller;
 
     public function __construct(array $config = null)
@@ -17,9 +18,10 @@ class Core
         $this->request = new Request();
         $this->router = new Router(['routes' => $config['routes']]);
         $this->loader = new Loader();
-        if (isset($config['db'])) {
-            $this->db = $this->loader->db($config['db']);
-        }
+
+        $preload = get_config('preload');
+
+        $this->db = ($preload['db']) ? $this->loader->db() : null;
     }
 
     public function init()
@@ -29,7 +31,7 @@ class Core
         if ($route) {
             [$controller_path, $method] = explode('::', $route['method']);
             $c = $this->loadController($controller_path);
-            $c->init($this->request, $this->db, $this->loader);
+            $c->init($this->request, $this->loader, $this->db);
             $c->$method($params, $route['data']);
             $this->controller = $c;
         } else {

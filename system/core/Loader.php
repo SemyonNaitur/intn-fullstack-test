@@ -1,6 +1,8 @@
 <?php
 
-namespace System;
+namespace System\Core;
+
+use System\Libraries\Db;
 
 class Loader
 {
@@ -19,7 +21,7 @@ class Loader
      * @param   array   $config
      * @return  Db
      */
-    public function db(string $name, array $config = []): Db
+    public function db(string $name = 'default', array $config = []): Db
     {
         if (isset($this->pool['db'][$name])) {
             return $this->pool['db'][$name];
