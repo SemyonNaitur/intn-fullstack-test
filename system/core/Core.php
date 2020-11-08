@@ -7,25 +7,28 @@ use System\Libraries\Db;
 class Core
 {
 
+    private Loader $loader;
     private Request $request;
     private Router $router;
-    private Loader $loader;
     private Db $db;
     private Controller $controller;
 
-    public function __construct(array $config = null)
-    {
-        $this->request = new Request();
-        $this->router = new Router(['routes' => $config['routes']]);
-        $this->loader = new Loader();
-
-        $preload = get_config('preload');
-
-        $this->db = ($preload['db']) ? $this->loader->db() : null;
+    public function __construct(
+        Loader $loader,
+        Request $request,
+        Router $router
+    ) {
+        $this->loader = $loader;
+        $this->request = $request;
+        $this->router = $router;
     }
 
     public function init()
     {
+        $preload = get_config('preload');
+
+        $this->db = ($preload['db']) ? $this->loader->db() : null;
+
         ['route' => $route, 'params' => $params] = $this->router->matchUrl($this->request->uri());
 
         if ($route) {
@@ -40,16 +43,10 @@ class Core
         }
     }
 
-    /**
-     * Loads the requested controller class, creates an instance and returns it.
-     * 
-     * @param   string  $path
-     * @return  Controller
-     */
-    public function loadController(string $path): Controller
+    protected function loadController(string $path): Controller
     {
-        $controller_class = get_config('controllers_path') . '/' . trim($path, '/');
-        $controller_class = str_replace('/', '\\', $controller_class);
-        return new $controller_class();
+        $cls = get_config('controllers_path') . '/' . trim($path, '/');
+        $cls = str_replace('/', '\\', $cls);
+        return new $cls();
     }
 }

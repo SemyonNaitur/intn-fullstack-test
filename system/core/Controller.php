@@ -11,10 +11,6 @@ abstract class Controller
     protected Loader $load;
     protected Db $db;
 
-    public function __construct()
-    {
-    }
-
     public function init(
         Request &$request,
         Loader &$loader,

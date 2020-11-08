@@ -13,6 +13,7 @@ class RouterTest extends Controller
 
     public function printRequest(?array $params, ?array $data)
     {
+        $this->load->view('template/header');
         echo '<pre>';
         if ($data['print_args']) {
             print_r($params);
@@ -21,6 +22,7 @@ class RouterTest extends Controller
         print_r($_GET);
         print_r($_SERVER);
         echo '</pre>';
+        $this->load->view('template/footer');
     }
 
     public function catIdProp(?array $params, ?array $data)

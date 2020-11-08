@@ -4,6 +4,16 @@ namespace System\Core;
 
 class Request
 {
+
+    public static function input(): array
+    {
+        try {
+            return ${"_$_SERVER[REQUEST_METHOD]"};
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
     public static function host(): string
     {
         return 'http' . rtrim((isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "$_SERVER[HTTP_HOST]", '/');

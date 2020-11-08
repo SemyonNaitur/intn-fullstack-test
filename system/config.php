@@ -1,31 +1,25 @@
 <?php
 
-//--- system file structure ---//
-// define('LIBRARIES_DIR', ROOT_DIR . '/libraries');
-// define('LIBRARIES_DIR', ROOT_DIR . '/libraries');
-// define('TEMPLATE_DIR', APP_DIR . '/template');
-// define('PAGES_DIR', ROOT_DIR . '/pages');
-//--- /system file structure ---//
-
-//--- app file structure ---//
+//--- file structure ---//
+define('SYS_LIB_DIR', SYS_DIR . '/libraries');
 define('APP_PATH', 'app');
-define('APP_DIR', ROOT_DIR . '/app');
-define('CONTROLLERS_DIR', APP_DIR . '/controllers');
-define('MODELS_DIR', APP_DIR . '/models');
-define('VIEWS_DIR', APP_DIR . '/views');
-define('LIBRARIES_DIR', ROOT_DIR . '/libraries');
-define('TEMPLATE_DIR', APP_DIR . '/template');
-// define('PAGES_DIR', ROOT_DIR . '/pages');
-//--- /app file structure ---//
+define('APP_DIR', ROOT_DIR . '/' . APP_PATH);
+//--- /file structure ---//
 
 
 //--- app config ---//
 $app_config = [
+    'debug' => false,
+
+    //--- app file structure ---//
     'controllers_path'  => APP_PATH . '/controllers',
     'models_path'       => APP_PATH . '/models',
     'views_path'        => APP_PATH . '/views',
     'libraries_path'    => APP_PATH . '/libraries',
+    //--- /app file structure ---//
 ];
+
+require_once APP_DIR . '/config/config.php';
 
 function get_config(string $item = '')
 {
@@ -41,15 +35,23 @@ function base_url()
 
 
 //--- autoloader ---//
-define('CUSTOM_AUTOLOADER', 0);
+define('CUSTOM_AUTOLOADER', 1);
 if (CUSTOM_AUTOLOADER) { // https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader-examples.md
     spl_autoload_register(function ($class) {
-        // $pfx = 'System\\';
-        // $len = strlen($pfx);
-        // if (strncmp($pfx, $class, $len) !== 0) return;
-        // $cls = substr($class, $len);
-        // $file = SYS_DIR . '/' . str_replace('\\', '/', $class) . '.php';
         $file = ROOT_DIR . '/' . str_replace('\\', '/', $class) . '.php';
+
+        if (!file_exists($file)) {
+            $app_lib_dir = ROOT_DIR . '/' . get_config('libraries_path');
+            /**
+             * If a library is requsted, but isn't found under app/, it is searched again under system/.
+             */
+            if (stripos($file, $app_lib_dir) === 0) {
+                str_ireplace($app_lib_dir, SYS_LIB_DIR, $file);
+            } else {
+                return;
+            }
+        }
+
         if (file_exists($file)) {
             require $file;
         }

@@ -4,11 +4,11 @@ namespace System\Libraries;
 
 class Validator
 {
-    protected ?DB $db = null;
-    protected ?array $errorBag = null;
-    protected array $defaultOpts = ['clear_error_bag' => false];
+    protected ?Db $db = null;
+    protected ?array $error_bag = null;
+    protected array $default_opts = ['clear_error_bag' => false];
 
-    public function __construct(DB $db = null)
+    public function __construct(Db $db = null)
     {
         $this->setDb($db);
     }
@@ -81,21 +81,35 @@ class Validator
         }
     }
 
-    public function setDb(DB $db)
+    public function setDb(Db $db): void
     {
         $this->db = $db;
     }
 
+    protected function checkOpts(array $opts): array
+    {
+        $opts = array_merge($this->default_opts, $opts);
+        if ($opts['clear_error_bag']) {
+            $this->clearErrorBag();
+        }
+        return $opts;
+    }
+
+    protected function updateErrorBag(array $errors): array
+    {
+        $this->error_bag = array_merge_recursive($this->error_bag ?? [], $errors);
+        return $this->error_bag;
+    }
+
     public function getErrorBag()
     {
-        return $this->errorBag;
+        return $this->error_bag;
     }
 
     public function clearErrorBag()
     {
-        $this->errorBag = null;
+        $this->error_bag = null;
     }
-
 
     //--- rules ---//
 
@@ -147,32 +161,16 @@ class Validator
      * 
      * @param   mixed       $val
      * @param   string      $params format: table.column
-     * @param   DBUtil      $db
+     * @param   Db          $db
      * @return  bool|string
      */
-    public static function unique_rule($val, string $params, ?DB $db)
+    public static function unique_rule($val, string $params, ?Db $db)
     {
-        if (!$db) throw new \Exception('An instance of DBUtil is required');
+        if (!$db) throw new \Exception('An instance of Db is required');
         [$tbl, $fld] = sscanf($params, '%[^.].%s');
         if (!$tbl) throw new \Exception('Params for "unique" rule are missing table name');
         if (!$fld) throw new \Exception('Params for "unique" rule are column table name');
         return $db->isUnique($val, $fld, $tbl) ?: '%s already exists.';
     }
     //--- /rules ---//
-
-
-    protected function checkOpts(array $opts): array
-    {
-        $opts = array_merge($this->defaultOpts, $opts);
-        if ($opts['clear_error_bag']) {
-            $this->clearErrorBag();
-        }
-        return $opts;
-    }
-
-    protected function updateErrorBag(array $errors): array
-    {
-        $this->errorBag = array_merge_recursive($this->errorBag ?? [], $errors);
-        return $this->errorBag;
-    }
 }

@@ -23,4 +23,4 @@
 </head>
 
 <body>
-    <?php include TEMPLATE_DIR . '/top-nav.php'; ?>
+    <?php include 'top-nav.php'; ?>

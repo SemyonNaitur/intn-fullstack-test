@@ -1,36 +1,34 @@
 <?php
-require_once UTILS_DIR . '/ApiBase.php';
 
-require_once MODELS_DIR . '/Post.php';
-require_once MODELS_DIR . '/User.php';
+namespace App\Libraries\Api;
+
+use System\Core\Loader;
+use System\Libraries\{Validator, Curl};
+use System\Libraries\Api\ApiBase;
+
+use App\Models\{User, Post};
 
 class BlogApi extends ApiBase
 {
-	protected DBUtil $db;
-	protected CURLUtil $curl;
-	protected Validator $validator;
+	protected Loader $load;
 
 	protected User $user;
 	protected Post $post;
 
 	protected $data_url = 'https://jsonplaceholder.typicode.com';
 
-	function __construct(array $input, DBUtil $db, CURLUtil $curl, Validator $validator)
+	function __construct(array $input, Loader $loader)
 	{
 		parent::__construct($input);
-		$this->db = $db;
-		$this->curl = $curl;
-		$this->validator = $validator;
-		$this->user = new User($db->get_connection());
-		$this->post = new Post($db->get_connection());
-		$this->post->debug = $this->user->debug = $this->curl->debug = DEBUG;
+		$this->load = $loader;
+		$this->user = $this->load->model('User');
+		$this->post = $this->load->model('Post');
 	}
 
 	//--- API methods ---//
 
-	public function fetch_remote_data(array $params)
+	public function fetchRemoteData(array $params)
 	{
-
 		$data = [
 			'inserted_users' => 0,
 			'inserted_posts' => 0,
@@ -38,13 +36,13 @@ class BlogApi extends ApiBase
 		$err = null;
 
 		$url = $this->data_url;
-		$res = $this->fetch_users($url);
+		$res = $this->fetchUsers($url);
 		if (!($err = $res['error'])) {
 			$data['inserted_users'] = $res['inserted'];
 		}
 
 		if ($data['inserted_users']) {
-			$res = $this->fetch_posts($url);
+			$res = $this->fetchPosts($url);
 			if (!($err = $res['error'])) {
 				$data['inserted_posts'] = $res['inserted'];
 			}
@@ -53,27 +51,27 @@ class BlogApi extends ApiBase
 		($err) ? $this->error($err) : $this->success($data);
 	}
 
-	public function create_user(array $params)
+	public function createUser(array $params)
 	{
 		$data = $err = null;
-		if (!($missing = $this->check_missing($params, ['user']))) {
-			if ($this->validate_user($params['user'])) {
+		if (!($missing = $this->checkMissing($params, ['user']))) {
+			if ($this->validateUser($params['user'])) {
 				$res = $this->user->create($params['user']);
 				if (!($err = $res['error'])) {
 					$data = $res['record'];
 				}
 			}
 		}
-		if ($missing) $this->params_error($missing);
+		if ($missing) $this->paramsError($missing);
 		if ($err) $this->error($err);
-		if ($error_bag = $this->validator->get_error_bag()) $this->validation_fail($error_bag);
+		if ($error_bag = $this->validator->get_error_bag()) $this->validationFail($error_bag);
 		$this->success($data);
 	}
 
-	public function create_post(array $params)
+	public function createPost(array $params)
 	{
 		try {
-			$db = $this->db;
+			$db = $this->load->db();
 			$transaction = false;
 			$err = null;
 			$error_bag = null;
@@ -86,13 +84,13 @@ class BlogApi extends ApiBase
 			$post['id'] = null;
 
 			if (!$user['id']) {
-				$this->validate_user($user);
+				$this->validateUser($user);
 			}
-			$this->validate_post($post);
+			$this->validatePost($post);
 
-			if (!($error_bag = $this->validator->get_error_bag())) {
+			if (!($error_bag = $this->validator->getErrorBag())) {
 				if (!$user['id']) {
-					$db->begin_transaction();
+					$db->beginTransaction();
 					$transaction = true;
 					$res = $this->user->create($user);
 					if (!($err = $res['error'])) {
@@ -109,7 +107,7 @@ class BlogApi extends ApiBase
 			}
 
 			if ($error_bag) {
-				$this->validation_fail($error_bag);
+				$this->validationFail($error_bag);
 			} elseif (!$post['id']) {
 				if ($transaction) $db->rollback();
 				$this->error($err);
@@ -117,14 +115,14 @@ class BlogApi extends ApiBase
 				if ($transaction) $db->commit();
 				$this->success(compact('user', 'post'));
 			}
-		} catch (PDOException $e) {
-			$db->db_exception($e);
+		} catch (\PDOException $e) {
+			$db->exception($e);
 		}
 	}
 
-	public function user_stats(array $params)
+	public function userStats(array $params)
 	{
-		$res = $this->post->user_stats();
+		$res = $this->post->userStats();
 		if ($res['error']) {
 			$this->error($res['error']);
 		} else {
@@ -134,15 +132,15 @@ class BlogApi extends ApiBase
 	//--- /API methods ---//
 
 
-	protected function fetch_users($url)
+	protected function fetchUsers($url)
 	{
 		$ret = ['inserted' => 0, 'error' => ''];
-		$curl_res = $this->curl->get_content("$url/users");
+		$curl_res = $this->curl->getContent("$url/users");
 		if ($curl_res['error']) {
 			$ret['error'] = $curl_res['error'];
 		} else {
 			$data = json_decode($curl_res['result'], true);
-			$db_res = $this->user->insert_batch($data);
+			$db_res = $this->user->insertBatch($data);
 			if ($db_res['error']) {
 				$ret['error'] = $db_res['error'];
 			} else {
@@ -152,15 +150,15 @@ class BlogApi extends ApiBase
 		return $ret;
 	}
 
-	protected function fetch_posts($url)
+	protected function fetchPosts($url)
 	{
 		$ret = ['inserted' => 0, 'error' => ''];
-		$curl_res = $this->curl->get_content("$url/posts");
+		$curl_res = $this->curl->getContent("$url/posts");
 		if ($curl_res['error']) {
 			$ret['error'] = $curl_res['error'];
 		} else {
 			$data = json_decode($curl_res['result'], true);
-			$db_res = $this->post->insert_batch($data);
+			$db_res = $this->post->insertBatch($data);
 			if ($db_res['error']) {
 				$ret['error'] = $db_res['error'];
 			} else {
@@ -170,7 +168,7 @@ class BlogApi extends ApiBase
 		return $ret;
 	}
 
-	protected function validate_user(array $user)
+	protected function validateUser(array $user)
 	{
 		$rules = [
 			'name:Name' => 'required|string|min_length:2',
@@ -179,7 +177,7 @@ class BlogApi extends ApiBase
 		return $this->validator->validate($user, $rules);
 	}
 
-	protected function validate_post(array $post)
+	protected function validatePost(array $post)
 	{
 		$rules = [
 			'title:Title' => 'required|min_length:2',

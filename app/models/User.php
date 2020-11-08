@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use System\Db;
+use System\Core\Model;
 
-class User extends Db
+class User extends Model
 {
     protected $table = 'users';
     protected $primary_key = 'id';
@@ -30,16 +30,11 @@ class User extends Db
         ],
     ];
 
-    public function __construct($db_config)
-    {
-        parent::__construct($db_config);
-    }
-
-    public function insert_batch($data)
+    public function insertBatch($data)
     {
         try {
             $ret = ['inserted' => 0, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
 
             $sql = "INSERT INTO $tbl (id,name,email) VALUES (:id,:name,:email)";
@@ -54,7 +49,7 @@ class User extends Db
             return $ret;
         } catch (\PDOException $e) {
             $pdo->rollback();
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 
@@ -62,7 +57,7 @@ class User extends Db
     {
         try {
             $ret = ['record' => null, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
             $record = $this->filterFields($record, ['name', 'email']);
 
@@ -73,7 +68,7 @@ class User extends Db
             $ret['record'] = $record;
             return $ret;
         } catch (\PDOException $e) {
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 }

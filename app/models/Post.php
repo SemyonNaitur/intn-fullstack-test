@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use System\Db;
+use System\Core\Model;
 
-class Post extends Db
+class Post extends Model
 {
     protected $table = 'posts';
     protected $primary_key = 'id';
@@ -35,16 +35,11 @@ class Post extends Db
         ],
     ];
 
-    public function __construct($db_config)
-    {
-        parent::__construct($db_config);
-    }
-
-    public function insert_batch($data)
+    public function insertBatch($data)
     {
         try {
             $ret = ['inserted' => 0, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
 
             $sql = "INSERT INTO $tbl (id,user_id,title,body) VALUES (:id,:userId,:title,:body)";
@@ -59,7 +54,7 @@ class Post extends Db
             return $ret;
         } catch (\PDOException $e) {
             $pdo->rollback();
-            return $this->dbException($e);
+            return $this->db->Exception($e);
         }
     }
 
@@ -67,7 +62,7 @@ class Post extends Db
     {
         try {
             $ret = ['record' => null, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
             $record = $this->filterFields($record, ['userId', 'title', 'body']);
 
@@ -78,7 +73,7 @@ class Post extends Db
             $ret['record'] = $record;
             return $ret;
         } catch (\PDOException $e) {
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 
@@ -86,7 +81,7 @@ class Post extends Db
     {
         try {
             $ret = ['row' => null, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
             $pk = $this->primary_key;
 
@@ -97,7 +92,7 @@ class Post extends Db
             $ret['row'] = $stmt->fetch(\PDO::FETCH_ASSOC);
             return $ret;
         } catch (\PDOException $e) {
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 
@@ -105,7 +100,7 @@ class Post extends Db
     {
         try {
             $ret = ['result' => null, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
 
             $select = $this->colsAsFields();
@@ -115,7 +110,7 @@ class Post extends Db
             $ret['result'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             return $ret;
         } catch (\PDOException $e) {
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 
@@ -123,7 +118,7 @@ class Post extends Db
     {
         try {
             $ret = ['result' => null, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
 
             $select = $this->colsAsFields();
@@ -133,7 +128,7 @@ class Post extends Db
             $ret['result'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             return $ret;
         } catch (\PDOException $e) {
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 
@@ -141,7 +136,7 @@ class Post extends Db
     {
         try {
             $ret = ['result' => null, 'error' => ''];
-            $pdo = $this->pdo;
+            $pdo = $this->db->getPdo();
             $tbl = $this->table;
 
             $select = $this->colsAsFields(['userId']);
@@ -150,7 +145,7 @@ class Post extends Db
             $ret['result'] = $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
             return $ret;
         } catch (\PDOException $e) {
-            return $this->dbException($e);
+            return $this->db->exception($e);
         }
     }
 }

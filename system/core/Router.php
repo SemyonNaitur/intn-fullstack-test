@@ -11,7 +11,7 @@ class Router
     {
         $routes = $config['routes'] ?? null;
         if (!is_Array($routes) || count($routes) < 1) {
-            throw new \Error('Invalid routes array');
+            throw new \Exception('Invalid routes array');
         }
         $this->initRoutes($routes);
     }

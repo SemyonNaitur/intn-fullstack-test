@@ -6,11 +6,22 @@ use System\Libraries\Db;
 
 class Loader
 {
+    /**
+     * Create a new instance even if an instance already exists.
+     * The instance won't be cached.
+     */
+    const NEW_INSTANCE = 'new_instance';
 
-    private $pool = [
-        'db' => [],
-        'model' => [],
-        'library' => [],
+    /**
+     * Create a new instance even if an instance already exists.
+     * The instance won't be cached.
+     */
+    const RETURN_VIEW = 'return_view';
+
+    private $pools = [
+        'dbs' => [],
+        'models' => [],
+        'libraries' => [],
     ];
 
     /**
@@ -19,79 +30,83 @@ class Loader
      * 
      * @param   string  $name
      * @param   array   $config
+     * @param   array   $opts
      * @return  Db
      */
-    public function db(string $name = 'default', array $config = []): Db
+    public function db(string $name = 'default', array $config = [], array $opts = []): Db
     {
-        if (isset($this->pool['db'][$name])) {
-            return $this->pool['db'][$name];
+        $pool = 'dbs';
+        $dbs = &$this->pools[$pool];
+
+        if (!in_array(self::NEW_INSTANCE, $opts)) {
+            if (isset($dbs[$name])) return $dbs[$name];
         }
+
         $defaults = get_config('db')[$name] ?? [];
         $config = array_merge($defaults, $config);
         if (!$config) throw new \Exception("No configuration for database: $name");
-        $db = $this->pool['db'][$name] = new Db($config);
+
+        $db = new Db($config);
+
+        if (!in_array(self::NEW_INSTANCE, $opts)) {
+            $dbs[$name] = $db;
+        }
         return $db;
     }
 
-    /**
-     * Loads the requested controller class, creates an instance and returns it.
-     * 
-     * @param   string  $path
-     * @return  Controller
-     */
-    public function model(string $path): Controller
+    public function model(string $name, array $args = null, array $opts = []): Model
     {
-        if (isset($this->pool['model'][$path])) {
-            return $this->pool['model'][$path];
-        }
-        $controller_class = ltrim(strrchr($path, '/'), '/');
-        $file = sprintf('%s/%s.php', MODELS_DIR, trim($path, '/'));
-        if (!file_exists($file)) {
-            throw new \Exception("Failed to load controller: $file");
-        }
-        include_once $file;
-        return new $controller_class();
+        return $this->loadClass('models', $name, $args, $opts);
     }
 
-    /**
-     * Loads the requested controller class, creates an instance and returns it.
-     * 
-     * @param   string  $path
-     * @return  Controller
-     */
-    public function library(string $path)
+    public function library(string $name, array $args = null, array $opts = [])
     {
-        $controller_class = ltrim(strrchr($path, '/'), '/');
-        $file = sprintf('%s/%s.php', CONTROLLERS_DIR, trim($path, '/'));
-        if (!file_exists($file)) {
-            throw new \Exception("Failed to load controller: $file");
+        return $this->loadClass('libraries', $name, $args, $opts);
+    }
+
+    public function loadClass(string $pool, string $name, array $args = null, array $opts = [])
+    {
+        if (!isset($this->pools[$pool])) {
+            throw new \Exception("Invalid class type: $pool");
         }
-        include_once $file;
-        return new $controller_class();
+        $p = &$this->pools[$pool];
+
+        if (!in_array(self::NEW_INSTANCE, $opts)) {
+            if (isset($p[$name])) return $p[$name];
+        }
+
+        $cls = get_config("{$pool}_path") . '/' . trim($name, '/');
+        $cls = str_replace('/', '\\', $cls);
+        $instance = new $cls(...$args);
+
+        if (!in_array(self::NEW_INSTANCE, $opts)) {
+            $p[$name] = $instance;
+        }
+        return $instance;
     }
 
     /**
      * Extracts variables to be used in the view and loads the view.
      * If $return = true, the view is returned as a string, otherwise it is sent to output.
      * 
-     * @param   string      $_name
-     * @param   array       $_data
-     * @param   bool        $_return
+     * @param   string      $__name
+     * @param   array       $__data
+     * @param   array       $__opts
      * @return  string|void 
      */
-    public function view(string $_name, array $_data = [], bool $_return = false)
+    public function view(string $__name, array $__data = [], array $__opts = [])
     {
-        $_file = sprintf('%s/%s.php', VIEWS_DIR, trim($_name, '/'));
-        if (!file_exists($_file)) {
-            throw new \Exception("Failed to load view: $_file");
+        $__file = sprintf('%s/%s/%s.php', ROOT_DIR, get_config('views_path'), trim($__name, '/'));
+        if (!file_exists($__file)) {
+            throw new \Exception("Failed to load view: $__file");
         }
 
-        extract($_data);
+        extract($__data);
 
         ob_start();
-        include $_file;
+        include $__file;
 
-        if ($_return) {
+        if (in_array(self::RETURN_VIEW, $__opts)) {
             $buffer = ob_get_contents();
             @ob_end_clean();
             return $buffer;
