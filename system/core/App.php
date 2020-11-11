@@ -4,8 +4,10 @@ namespace System\Core;
 
 use System\Libraries\Db;
 
-class Core
+class App
 {
+
+    private static App $instance;
 
     private Loader $loader;
     private Request $request;
@@ -13,17 +15,31 @@ class Core
     private Db $db;
     private Controller $controller;
 
-    public function __construct(
+    private function __construct()
+    {
+    }
+
+    public static function bootstrap(
         Loader $loader,
         Request $request,
         Router $router
     ) {
-        $this->loader = $loader;
-        $this->request = $request;
-        $this->router = $router;
+        if (isset(self::$instance)) {
+            throw new \Exception('Core already created');
+        }
+        $instance = self::$instance = new self();
+        $instance->loader = $loader;
+        $instance->request = $request;
+        $instance->router = $router;
+        return $instance;
     }
 
-    public function init()
+    public static function getInstance()
+    {
+        return self::$instance;
+    }
+
+    public function run()
     {
         $preload = get_config('preload');
 
@@ -33,20 +49,17 @@ class Core
 
         if ($route) {
             [$controller_path, $method] = explode('::', $route['method']);
-            $c = $this->loadController($controller_path);
-            $c->init($this->request, $this->loader, $this->db);
+
+            $cls = Loader::checkSuffix('controller', $controller_path);
+            $cls = get_config('controllers_path') . '/' . $cls;
+            $cls = str_replace('/', '\\', $cls);
+
+            $c = $cls::bootstrap($this->request, $this->loader, $this->db);
             $c->$method($params, $route['data']);
             $this->controller = $c;
         } else {
             http_response_code(404);
             die('<h4>Page not found</h4>');
         }
-    }
-
-    protected function loadController(string $path): Controller
-    {
-        $cls = get_config('controllers_path') . '/' . trim($path, '/');
-        $cls = str_replace('/', '\\', $cls);
-        return new $cls();
     }
 }

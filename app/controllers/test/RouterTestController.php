@@ -4,7 +4,7 @@ namespace App\Controllers\Test;
 
 use System\Core\Controller;
 
-class RouterTest extends Controller
+class RouterTestController extends Controller
 {
 
     public function __construct()
@@ -13,7 +13,6 @@ class RouterTest extends Controller
 
     public function printRequest(?array $params, ?array $data)
     {
-        $this->load->view('template/header');
         echo '<pre>';
         if ($data['print_args']) {
             print_r($params);
@@ -22,7 +21,6 @@ class RouterTest extends Controller
         print_r($_GET);
         print_r($_SERVER);
         echo '</pre>';
-        $this->load->view('template/footer');
     }
 
     public function catIdProp(?array $params, ?array $data)

@@ -1,16 +1,30 @@
 <?php
 
-use System\Core\{Core, Loader, Request, Router};
+use System\Core\{App, Loader, Request, Router};
 
 define('ROOT_DIR', __DIR__);
 define('SYS_DIR', ROOT_DIR . '/system');
 
 require_once SYS_DIR . '/config.php';
-require_once APP_DIR . '/config/config.php';
 
-$__core = new Core(
+(App::bootstrap(
     new Loader(),
     new Request(),
     new Router(['routes' => get_config('routes')])
-);
-$__core->init();
+))->run();
+
+function base_url(): string
+{
+    return System\Core\Request::base();
+}
+
+function html_title(string $title = null)
+{
+    static $html_title = '';
+
+    if (is_string($title)) {
+        $html_title = strip_tags($title);
+    } else {
+        return $html_title ?: get_config('app_name');
+    }
+}

@@ -1,15 +1,17 @@
 <?php
 
+namespace App\Controllers;
+
 use System\Core\Controller;
 
-class ApiTest extends Controller
+class ApiController extends Controller
 {
 
     public function __construct()
     {
     }
 
-    public function blogApi(?array $params, ?array $data)
+    public function intnBlog(?array $params, ?array $data)
     {
         $args = [
             $this->request->input(),

@@ -8,7 +8,7 @@ use System\Libraries\Api\ApiBase;
 
 use App\Models\{User, Post};
 
-class BlogApi extends ApiBase
+class IntnBlog extends ApiBase
 {
 	protected Loader $load;
 

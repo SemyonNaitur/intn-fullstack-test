@@ -26,11 +26,6 @@ function get_config(string $item = '')
     global $app_config;
     return ($item) ? ($app_config[$item] ?? null) : $app_config;
 }
-
-function base_url()
-{
-    return System\Core\Request::base();
-}
 //--- /app config ---//
 
 

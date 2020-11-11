@@ -7,18 +7,25 @@ use System\Libraries\Db;
 abstract class Controller
 {
 
+    private static Controller $instance;
+
     protected Request $request;
     protected Loader $load;
     protected Db $db;
 
-    public function init(
-        Request &$request,
-        Loader &$loader,
-        ?Db &$db
+    private function __construct()
+    {
+    }
+
+    public static function bootstrap(
+        Request $request,
+        Loader $loader,
+        ?Db $db
     ): Controller {
-        $this->request = &$request;
-        $this->load = &$loader;
-        $this->db = &$db;
-        return $this;
+        $instance = new static();
+        $instance->request = $request;
+        $instance->load = $loader;
+        $instance->db = $db;
+        return $instance;
     }
 }
