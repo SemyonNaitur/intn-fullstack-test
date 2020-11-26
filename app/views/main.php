@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="app/styles/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="app/styles/main.css">
 
+    <?= @$__styles ?>
+
     <title><?= html_title() ?></title>
 
 </head>
@@ -35,7 +37,8 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script src="js/lib.js"></script>
-    <script src="app/js/main.js"></script>
+
+    <?= @$__scripts ?>
 
 </body>
 

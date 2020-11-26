@@ -3,6 +3,7 @@
 $rtc = 'test/RouterTest';
 $ibp = 'assignments/intn-blog';
 $ibc = 'assignments/IntnBlog';
+$api = 'ApiController';
 
 $app_config['routes'] = [
     /**
@@ -11,6 +12,11 @@ $app_config['routes'] = [
     ['path' => "$ibp/create-post", 'method' => "$ibc::createPost"],
     ['path' => "$ibp/posts", 'method' => "$ibc::posts"],
     ['path' => "$ibp/stats", 'method' => "$ibc::stats"],
+
+    /**
+     * API.
+     */
+    ['path' => 'api/intn-blog', 'method' => "$api::intnBlog"],
 
     /**
      * Router test.
@@ -23,7 +29,7 @@ $app_config['routes'] = [
     ['callback' => 'route_callback_test', 'method' => "$rtc::callbackRoute"],
     ['path' => 'not-found', 'method' => "$rtc::notFound"],
 ];
-unset($rtc, $ibp, $ibc);
+unset($rtc, $ibp, $ibc, $api);
 
 
 function route_callback_test($url)

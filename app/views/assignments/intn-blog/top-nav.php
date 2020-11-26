@@ -25,15 +25,15 @@ if (!empty($page)) {
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topNav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <div class="collapse navbar-collapse" id="topNav">
         <ul class="navbar-nav mr-auto">
             <?php foreach ($top_nav as $data) { ?>
                 <li class="nav-item <?= $data['active'] ?>">
-                    <a class="nav-link" href="<?= $data['name'] ?>"><?= $data['text'] ?></a>
+                    <a class="nav-link" href="assignments/intn-blog/<?= $data['name'] ?>"><?= $data['text'] ?></a>
                 </li>
             <?php } ?>
         </ul>
