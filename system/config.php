@@ -32,22 +32,10 @@ function get_config(string $item = '')
 
 
 //--- autoloader ---//
-define('CUSTOM_AUTOLOADER', 1);
+define('CUSTOM_AUTOLOADER', 0);
 if (CUSTOM_AUTOLOADER) { // https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader-examples.md
     spl_autoload_register(function ($class) {
         $file = ROOT_DIR . '/' . str_replace('\\', '/', $class) . '.php';
-
-        if (!file_exists($file)) {
-            $app_lib_dir = ROOT_DIR . '/' . get_config('libraries_path');
-            /**
-             * If a library is requsted, but isn't found under app/, it is searched again under system/.
-             */
-            if (stripos($file, $app_lib_dir) === 0) {
-                str_ireplace($app_lib_dir, SYS_LIB_DIR, $file);
-            } else {
-                return;
-            }
-        }
 
         if (file_exists($file)) {
             require $file;

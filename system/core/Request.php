@@ -8,7 +8,13 @@ class Request
     public static function input(): array
     {
         try {
-            return ${"_$_SERVER[REQUEST_METHOD]"};
+            switch ($_SERVER['REQUEST_METHOD']) {
+                case 'GET':
+                    return $_GET;
+                case 'POST':
+                    return $_POST;
+            }
+            return [];
         } catch (\Exception $e) {
             return [];
         }

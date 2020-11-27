@@ -100,6 +100,7 @@ class Loader
     public function loadClass(string $pool, string $name, array $args = null, array $opts = null)
     {
         $opts = $opts ?? [];
+        $args = $args ?? [];
 
         if (!isset($this->pools[$pool])) {
             throw new \Exception("Invalid class type: $pool");
@@ -112,7 +113,17 @@ class Loader
 
         $cls = get_config("{$pool}_path") . '/' . $name;
         $cls = str_replace('/', '\\', $cls);
-        $instance = new $cls(...$args);
+        try {
+            $instance = new $cls(...$args);
+        } catch (\Throwable $e) {
+            if ($pool === 'libraries') {
+                /**
+                 * If a library is requsted, but isn't found under app/, it is searched again under system/.
+                 */
+                $cls = str_replace('app\\', 'system\\', $cls);
+                $instance = new $cls(...$args);
+            }
+        }
 
         if (!in_array(self::NEW_INSTANCE, $opts)) {
             $p[$name] = $instance;
