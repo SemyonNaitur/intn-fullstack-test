@@ -9,6 +9,12 @@ class IntnBlogController extends Controller
 
     protected $folder = 'assignments/intn-blog';
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->scripts("$this->folder/main");
+    }
+
     public function createPost(?array $params, ?array $data)
     {
         $folder = "$this->folder/create-post";
@@ -21,7 +27,6 @@ class IntnBlogController extends Controller
             'page_content' => $this->load->view("$folder/page-layout", $components, $opts),
         ];
         $this->load->styles('test');
-        $this->load->scripts("$this->folder/main");
         $this->render($content);
     }
 
@@ -33,7 +38,6 @@ class IntnBlogController extends Controller
             'top_nav' => $this->load->view("$this->folder/top-nav", null, $opts),
             'page_content' => $this->load->view("$folder/page-layout", null, $opts),
         ];
-        $this->load->scripts("$this->folder/main");
         $this->render($content);
     }
 
@@ -48,7 +52,6 @@ class IntnBlogController extends Controller
             'top_nav' => $this->load->view("$this->folder/top-nav", null, $opts),
             'page_content' => $this->load->view("$folder/page-layout", $components, $opts),
         ];
-        $this->load->scripts("$this->folder/main");
         $this->render($content);
     }
 

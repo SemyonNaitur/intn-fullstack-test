@@ -13,20 +13,12 @@ abstract class Controller
     protected Loader $load;
     protected Db $db;
 
-    private function __construct()
+    public function __construct()
     {
-    }
-
-    public static function bootstrap(
-        Request $request,
-        Loader $loader,
-        ?Db $db
-    ): Controller {
-        $instance = new static();
-        $instance->request = $request;
-        $instance->load = $loader;
-        $instance->db = $db;
-        return $instance;
+        $app = App::getInstance();
+        $this->request = $app->getRequest();
+        $loader = $this->load = $app->getLoader();
+        $this->db = $loader->getDefaultDb();
     }
 
     protected function render(array $content, bool $return = false, string $template = null)

@@ -2,8 +2,6 @@
 
 namespace System\Core;
 
-use System\Libraries\Db;
-
 class App
 {
 
@@ -12,7 +10,6 @@ class App
     private Loader $loader;
     private Request $request;
     private Router $router;
-    private Db $db;
     private Controller $controller;
 
     private function __construct()
@@ -25,7 +22,7 @@ class App
         Router $router
     ) {
         if (isset(self::$instance)) {
-            throw new \Exception('Core already created');
+            throw new \Exception('App already created');
         }
         $instance = self::$instance = new self();
         $instance->loader = $loader;
@@ -43,7 +40,7 @@ class App
     {
         $preload = get_config('preload');
 
-        $this->db = ($preload['db']) ? $this->loader->db() : null;
+        if ($preload['db']) $this->loader->db();
 
         ['route' => $route, 'params' => $params] = $this->router->matchUrl($this->request->uri());
 
@@ -54,12 +51,22 @@ class App
             $cls = get_config('controllers_path') . '/' . $cls;
             $cls = str_replace('/', '\\', $cls);
 
-            $c = $cls::bootstrap($this->request, $this->loader, $this->db);
+            $c = new $cls();
             $c->$method($params, $route['data']);
             $this->controller = $c;
         } else {
             http_response_code(404);
             die('<h4>Page not found</h4>');
         }
+    }
+
+    public function getRequest(): Request
+    {
+        return $this->request;
+    }
+
+    public function getLoader(): Loader
+    {
+        return $this->loader;
     }
 }
