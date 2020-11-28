@@ -38,6 +38,10 @@
 
     <script src="js/lib.js"></script>
 
+    <script>
+        const APP_CONFIG = JSON.parse('<?= json_encode(js_config()) ?>');
+    </script>
+
     <?= @$__scripts ?>
 
 </body>

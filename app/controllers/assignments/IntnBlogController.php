@@ -13,6 +13,7 @@ class IntnBlogController extends Controller
     {
         parent::__construct();
         $this->load->scripts("$this->folder/main");
+        js_config('apiUrl', 'api/intn-blog/');
     }
 
     public function createPost(?array $params, ?array $data)

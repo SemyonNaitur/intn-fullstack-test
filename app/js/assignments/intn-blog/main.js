@@ -172,7 +172,7 @@ class UserStatsCmp extends UIComponent {
 
 $(function () {
 
-	const apiUrl = 'api/intn-blog/';
+	const apiUrl = APP_CONFIG['apiUrl'];
 
 	const $body = $('body');
 	UIComponent.initLoading($body);

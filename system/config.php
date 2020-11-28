@@ -8,7 +8,7 @@ define('APP_DIR', ROOT_DIR . '/' . APP_PATH);
 
 
 //--- app config ---//
-function app_config(string $property, $value = null)
+function app_config(string $property = '', $value = null)
 {
     static $config = [
         'debug' => false,
@@ -23,9 +23,20 @@ function app_config(string $property, $value = null)
         //--- /app file structure ---//
     ];
 
-    if (is_null($value)) {
-        return $config[$property] ?? null;
-    }
+    if (!$property) return $config;
+
+    if (is_null($value)) return $config[$property] ?? null;
+
+    $config[$property] = $value;
+}
+
+function js_config(string $property = '', $value = null)
+{
+    static $config = [];
+
+    if (!$property) return $config;
+
+    if (is_null($value)) return $config[$property] ?? null;
 
     $config[$property] = $value;
 }
