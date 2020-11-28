@@ -77,7 +77,7 @@ class IntnBlogController extends Controller
             echo json_encode($data, JSON_PRETTY_PRINT);
             die;
         } catch (\Throwable $e) {
-            if (get_config('debug')) {
+            if (app_config('debug')) {
                 throw $e;
             } else {
                 http_response_code(500);

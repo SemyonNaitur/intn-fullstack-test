@@ -8,26 +8,29 @@ define('APP_DIR', ROOT_DIR . '/' . APP_PATH);
 
 
 //--- app config ---//
-$app_config = [
-    'debug' => false,
+function app_config(string $property, $value = null)
+{
+    static $config = [
+        'debug' => false,
 
-    //--- app file structure ---//
-    'controllers_path'  => APP_PATH . '/controllers',
-    'models_path'       => APP_PATH . '/models',
-    'views_path'        => APP_PATH . '/views',
-    'styles_path'       => APP_PATH . '/styles',
-    'js_path'           => APP_PATH . '/js',
-    'libraries_path'    => APP_PATH . '/libraries',
-    //--- /app file structure ---//
-];
+        //--- app file structure ---//
+        'controllers_path'  => APP_PATH . '/controllers',
+        'models_path'       => APP_PATH . '/models',
+        'views_path'        => APP_PATH . '/views',
+        'styles_path'       => APP_PATH . '/styles',
+        'js_path'           => APP_PATH . '/js',
+        'libraries_path'    => APP_PATH . '/libraries',
+        //--- /app file structure ---//
+    ];
+
+    if (is_null($value)) {
+        return $config[$property] ?? null;
+    }
+
+    $config[$property] = $value;
+}
 
 require_once APP_DIR . '/config/config.php';
-
-function get_config(string $item = '')
-{
-    global $app_config;
-    return ($item) ? ($app_config[$item] ?? null) : $app_config;
-}
 //--- /app config ---//
 
 

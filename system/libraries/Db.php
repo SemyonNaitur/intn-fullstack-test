@@ -51,7 +51,7 @@ class Db
 	public function exception($e)
 	{
 		if ($e instanceof \PDOException) {
-			return ['error' => (get_config('debug')) ? $e->getMessage() : 'DB Error.'];
+			return ['error' => (app_config('debug')) ? $e->getMessage() : 'DB Error.'];
 		}
 		throw $e;
 	}

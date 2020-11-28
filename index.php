@@ -10,7 +10,7 @@ require_once SYS_DIR . '/config.php';
 (App::bootstrap(
     new Loader(),
     new Request(),
-    new Router(['routes' => get_config('routes')])
+    new Router(['routes' => app_config('routes')])
 ))->run();
 
 function base_url(): string
@@ -25,6 +25,6 @@ function html_title(string $title = null)
     if (is_string($title)) {
         $html_title = strip_tags($title);
     } else {
-        return $html_title ?: get_config('app_name');
+        return $html_title ?: app_config('app_name');
     }
 }

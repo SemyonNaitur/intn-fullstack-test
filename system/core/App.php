@@ -38,7 +38,7 @@ class App
 
     public function run()
     {
-        $preload = get_config('preload');
+        $preload = app_config('preload');
 
         if ($preload['db']) $this->loader->db();
 
@@ -48,7 +48,7 @@ class App
             [$controller_path, $method] = explode('::', $route['method']);
 
             $cls = Loader::checkSuffix('controller', $controller_path);
-            $cls = get_config('controllers_path') . '/' . $cls;
+            $cls = app_config('controllers_path') . '/' . $cls;
             $cls = str_replace('/', '\\', $cls);
 
             $c = new $cls();

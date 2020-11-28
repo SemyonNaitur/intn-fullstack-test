@@ -74,7 +74,7 @@ class Loader
             if (isset($dbs[$name])) return $dbs[$name];
         }
 
-        $defaults = get_config('db')[$name] ?? [];
+        $defaults = app_config('db')[$name] ?? [];
         $config = array_merge($defaults, $config ?? []);
         if (!$config) throw new \Exception("No configuration for database: $name");
 
@@ -111,7 +111,7 @@ class Loader
             if (isset($p[$name])) return $p[$name];
         }
 
-        $cls = get_config("{$pool}_path") . '/' . $name;
+        $cls = app_config("{$pool}_path") . '/' . $name;
         $cls = str_replace('/', '\\', $cls);
         try {
             $instance = new $cls(...$args);
@@ -151,7 +151,7 @@ class Loader
 
         $__args = compact('name', 'data', 'opts');
         unset($name, $data, $opts);
-        $__file = sprintf('%s/%s/%s.php', ROOT_DIR, get_config('views_path'), $__args['name']);
+        $__file = sprintf('%s/%s/%s.php', ROOT_DIR, app_config('views_path'), $__args['name']);
         if (!file_exists($__file)) {
             throw new \Exception("Failed to load view: $__file");
         }
@@ -196,7 +196,7 @@ class Loader
                 if (in_array(self::EXTERNAL, $opts)) {
                     $file = $name;
                 } else {
-                    $file = sprintf('%s/%s/%s.css', ROOT_DIR, get_config('styles_path'), $name);
+                    $file = sprintf('%s/%s/%s.css', ROOT_DIR, app_config('styles_path'), $name);
                 }
                 if ($content = @file_get_contents($file)) {
                     $styles .= "<style>\n$content\n</style>\n";
@@ -207,7 +207,7 @@ class Loader
                 if (in_array(self::EXTERNAL, $opts)) {
                     $href = $name;
                 } else {
-                    $href = sprintf('%s/%s.css', get_config('styles_path'), $name);
+                    $href = sprintf('%s/%s.css', app_config('styles_path'), $name);
                 }
                 $styles .= "<link rel=\"stylesheet\" href=\"$href\">\n";
             }
@@ -238,7 +238,7 @@ class Loader
                 if (in_array(self::EXTERNAL, $opts)) {
                     $file = $name;
                 } else {
-                    $file = sprintf('%s/%s/%s.js', ROOT_DIR, get_config('js_path'), $name);
+                    $file = sprintf('%s/%s/%s.js', ROOT_DIR, app_config('js_path'), $name);
                 }
                 if ($content = @file_get_contents($file)) {
                     $scripts .= "<script>\n$content\n</script>\n";
@@ -249,7 +249,7 @@ class Loader
                 if (in_array(self::EXTERNAL, $opts)) {
                     $src = $name;
                 } else {
-                    $src = sprintf('%s/%s.js', get_config('js_path'), $name);
+                    $src = sprintf('%s/%s.js', app_config('js_path'), $name);
                 }
                 $scripts .= "<script src=\"$src\"></script>\n";
             }

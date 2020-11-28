@@ -5,7 +5,7 @@ $ibp = 'assignments/intn-blog';
 $ibc = 'assignments/IntnBlog';
 $api = 'ApiController';
 
-$app_config['routes'] = [
+app_config('routes', [
     /**
      * Intn blog.
      */
@@ -29,7 +29,7 @@ $app_config['routes'] = [
     ['regex' => '/regex\/route/', 'method' => "$rtc::regexRoute"],
     ['callback' => 'route_callback_test', 'method' => "$rtc::callbackRoute"],
     ['path' => 'not-found', 'method' => "$rtc::notFound"],
-];
+]);
 unset($rtc, $ibp, $ibc, $api);
 
 

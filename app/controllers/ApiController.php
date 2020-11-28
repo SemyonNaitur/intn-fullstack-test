@@ -15,7 +15,7 @@ class ApiController extends Controller
                     return $this->intnBlog($params, $data);
             }
         } catch (\Throwable $e) {
-            if (get_config('debug')) {
+            if (app_config('debug')) {
                 throw $e;
             } else {
                 http_response_code(500);
