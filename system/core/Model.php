@@ -13,9 +13,11 @@ abstract class Model
     protected $fields = [];
     protected $columns = [];
 
-    public function init()
+    public function init(Db $db = null): self
     {
+        $this->db = $db;
         $this->initFields();
+        return $this;
     }
 
     private function initFields()

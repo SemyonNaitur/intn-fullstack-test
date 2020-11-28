@@ -88,8 +88,8 @@ class Loader
 
     public function model(string $name, array $args = null, array $opts = null): Model
     {
-        $name = Loader::checkSuffix('model', $name);
-        return $this->loadClass('models', $name, $args, $opts);
+        $instance = $this->loadClass('models', $name, $args, $opts);
+        return $instance->init($this->getDefaultDb());
     }
 
     public function library(string $name, array $args = null, array $opts = null)
@@ -116,13 +116,17 @@ class Loader
         try {
             $instance = new $cls(...$args);
         } catch (\Throwable $e) {
-            if ($pool === 'libraries') {
-                /**
-                 * If a library is requsted, but isn't found under app/, it is searched again under system/.
-                 */
-                $cls = str_replace('app\\', 'system\\', $cls);
-                $instance = new $cls(...$args);
+            // If the class was loaded but failed to construct, rethrow the exception.
+            if (class_exists($cls)) {
+                throw $e;
             }
+
+            // If a library is requsted, but isn't found under app/, it is searched again under system/.
+            if ($pool === 'libraries') {
+                $cls = str_replace('app\\', 'system\\', $cls);
+            }
+
+            $instance = new $cls(...$args);
         }
 
         if (!in_array(self::NEW_INSTANCE, $opts)) {
@@ -256,5 +260,10 @@ class Loader
         }
 
         $this->scripts .= $scripts;
+    }
+
+    public function getDefaultDb(): ?Db
+    {
+        return $this->pools['dbs']['default'] ?? null;
     }
 }
