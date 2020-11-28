@@ -2,27 +2,37 @@
 
 namespace App\Libraries\Api;
 
-use System\Core\Loader;
-use System\Libraries\{Validator, Curl};
+use System\Libraries\{Db, Validator, Curl};
 use System\Libraries\Api\ApiBase;
 
 use App\Models\{User, Post};
 
 class IntnBlog extends ApiBase
 {
-	protected Loader $load;
+	protected Db $db;
+	protected Curl $curl;
+	protected Validator $validator;
 
 	protected User $user;
 	protected Post $post;
 
 	protected $data_url = 'https://jsonplaceholder.typicode.com';
 
-	function __construct(array $input, Loader $loader)
-	{
+	function __construct(
+		array $input,
+		Db $db,
+		Curl $curl,
+		Validator $validator,
+		User $user,
+		Post $post
+	) {
 		parent::__construct($input);
-		$this->load = $loader;
-		$this->user = $this->load->model('User');
-		$this->post = $this->load->model('Post');
+		$this->db = $db;
+		$this->curl = $curl;
+		$this->validator = $validator;
+
+		$this->user = $user;
+		$this->post = $post;
 	}
 
 	//--- API methods ---//
@@ -64,14 +74,14 @@ class IntnBlog extends ApiBase
 		}
 		if ($missing) $this->paramsError($missing);
 		if ($err) $this->error($err);
-		if ($error_bag = $this->validator->get_error_bag()) $this->validationFail($error_bag);
+		if ($error_bag = $this->validator->getErrorBag()) $this->validationFail($error_bag);
 		$this->success($data);
 	}
 
 	public function createPost(array $params)
 	{
 		try {
-			$db = $this->load->db();
+			$db = $this->db;
 			$transaction = false;
 			$err = null;
 			$error_bag = null;
@@ -172,7 +182,7 @@ class IntnBlog extends ApiBase
 	{
 		$rules = [
 			'name:Name' => 'required|string|min_length:2',
-			'email:Email' => 'required|unique:users.email',
+			'email:Email' => 'required|unique:intn_users.email',
 		];
 		return $this->validator->validate($user, $rules);
 	}

@@ -6,7 +6,7 @@ use System\Core\Model;
 
 class User extends Model
 {
-    protected $table = 'users';
+    protected $table = 'intn_users';
     protected $primary_key = 'id';
     protected $fields = [
         'id' => [

@@ -3,7 +3,7 @@
 $app_config['db'] = [
     'default' => [
         'host' => 'localhost',
-        'dbname' => 'intn_blog',
+        'dbname' => 'mvc_sandbox',
         'user' => 'root',
         'pass' => ''
     ],

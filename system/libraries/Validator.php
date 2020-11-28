@@ -58,7 +58,7 @@ class Validator
                         }
                     }
 
-                    $func = $rule_name . '_rule';
+                    $func = $this->toCamelCase($rule_name) . '_rule';
                     if (!method_exists($this, $func)) {
                         throw new \Exception("Invalid rule name: $rule_name");
                     }
@@ -173,4 +173,12 @@ class Validator
         return $db->isUnique($val, $fld, $tbl) ?: '%s already exists.';
     }
     //--- /rules ---//
+
+    private static function toCamelCase($str)
+    {
+        $str = str_replace(['_', '-'], ' ', $str);
+        $str = ucwords($str);
+        $str = str_replace(' ', '', $str);
+        return lcfirst($str);
+    }
 }

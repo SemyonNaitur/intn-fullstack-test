@@ -1,4 +1,4 @@
-<div data-view="user-stats" class="card">
+<div data-cmp="user-stats" class="card">
     <div class="card-body">
         <h4>User Statistics</h4>
         <div class="row">

@@ -12,11 +12,12 @@ $app_config['routes'] = [
     ['path' => "$ibp/create-post", 'method' => "$ibc::createPost"],
     ['path' => "$ibp/posts", 'method' => "$ibc::posts"],
     ['path' => "$ibp/stats", 'method' => "$ibc::stats"],
+    ['path' => "$ibp/posts-json", 'method' => "$ibc::postsJson"],
 
     /**
      * API.
      */
-    ['path' => 'api/intn-blog', 'method' => "$api::intnBlog"],
+    ['path' => 'api/:name', 'method' => "$api::index"],
 
     /**
      * Router test.

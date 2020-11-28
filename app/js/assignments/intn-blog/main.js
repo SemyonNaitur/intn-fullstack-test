@@ -44,7 +44,7 @@ class CreatePostFormCmp extends UIComponent {
 		this.formDisable();
 
 		const req = {
-			method: 'create_post',
+			method: 'createPost',
 			params: {
 				user: this.formGetUser(),
 				post: this.formGetPost(),
@@ -131,7 +131,7 @@ class UserStatsCmp extends UIComponent {
 		this.loading(loadingName);
 
 		const req = {
-			method: 'user_stats',
+			method: 'userStats',
 			params: {},
 		};
 		$.get(
@@ -202,7 +202,7 @@ $(function () {
 	const cmpInstances = [];
 
 	for (const cfg of componentsConfig) {
-		$body.find(`[data-view="${cfg.view}"]`).each((i, el) => {
+		$body.find(`[data-cmp="${cfg.view}"]`).each((i, el) => {
 			const cmp = new cfg.ctor($(this), cfg.dependencies);
 			cmp.init();
 			cmpInstances.push(cmp);
@@ -216,23 +216,23 @@ $(function () {
 	const $searchBy = $postsContent.find('[data-field="search-by"]');
 	const $searchParam = $postsContent.find('[data-field="search-param"]');
 	$postsContent.find('[data-action="search"]').click(() => {
-		const url = `posts-json.php?${$searchBy.val()}=${$searchParam.val()}`;
+		const url = `assignments/intn-blog/posts-json/?${$searchBy.val()}=${$searchParam.val()}`;
 		window.open(url, '_blank');
 	});
 
 	//fetch data
 	$postsContent.find('[data-action="fetch-data"]').click(() => {
 		UIComponent.loading($postsContent);
-		fetchData(apiURL);
+		fetchData(apiUrl);
 	});
 
-	function fetchData(apiURL) {
+	function fetchData(apiUrl) {
 		const req = {
-			method: 'fetch_remote_data',
+			method: 'fetchRemoteData',
 			params: {}
 		};
 		$.get(
-			apiURL,
+			apiUrl,
 			req,
 			res => fetchDataSuccess(res),
 			'json'

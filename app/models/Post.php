@@ -6,7 +6,7 @@ use System\Core\Model;
 
 class Post extends Model
 {
-    protected $table = 'posts';
+    protected $table = 'intn_posts';
     protected $primary_key = 'id';
     protected $fields = [
         'id' => [
