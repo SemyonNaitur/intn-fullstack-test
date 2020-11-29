@@ -1,4 +1,4 @@
-<div data-view="create-post-form" data-load="forms" class="card loading-wrap">
+<div data-cmp="create-post-form" data-load="forms" class="card loading-wrap">
     <div class="card-body">
 
         <div class="row">

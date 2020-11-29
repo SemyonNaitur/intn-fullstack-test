@@ -1,17 +1,30 @@
 <?php
-require_once 'config.php';
-require_once UTILS_DIR . '/helper.php';
 
-$page = (empty($_GET['page'])) ? 'create-post' : $_GET['page'];
+use System\Core\{App, Loader, Request, Router};
 
-include TEMPLATE_DIR . '/header.php';
+define('ROOT_DIR', __DIR__);
+define('SYS_DIR', ROOT_DIR . '/system');
 
-$index_file = PAGES_DIR . "/$page/index.php";
-if (file_exists($index_file)) {
-    include $index_file;
-} else {
-    http_response_code(404);
-    echo '<h3>Page not found</h3>';
+require_once SYS_DIR . '/config.php';
+
+(App::bootstrap(
+    new Loader(),
+    new Request(),
+    new Router(['routes' => app_config('routes')])
+))->run();
+
+function base_url(): string
+{
+    return System\Core\Request::base();
 }
 
-include TEMPLATE_DIR . '/footer.php';
+function html_title(string $title = null)
+{
+    static $html_title = '';
+
+    if (is_string($title)) {
+        $html_title = strip_tags($title);
+    } else {
+        return $html_title ?: app_config('app_name');
+    }
+}
