@@ -4,7 +4,6 @@ namespace System\Libraries;
 
 class Db
 {
-
 	protected $db_config = [
 		'host' => '',
 		'dbname' => '',

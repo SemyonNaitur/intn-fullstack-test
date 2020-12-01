@@ -6,9 +6,6 @@ use System\Libraries\Db;
 
 abstract class Controller
 {
-
-    private static Controller $instance;
-
     protected Request $request;
     protected Loader $load;
     protected Db $db;

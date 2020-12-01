@@ -6,7 +6,6 @@ use System\Core\Controller;
 
 class RouterTestController extends Controller
 {
-
     public function __construct()
     {
     }

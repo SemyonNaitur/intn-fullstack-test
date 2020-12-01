@@ -6,7 +6,6 @@ use System\Core\Controller;
 
 class ApiController extends Controller
 {
-
     public function index(?array $params, ?array $data)
     {
         try {

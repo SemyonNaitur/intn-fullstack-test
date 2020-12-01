@@ -4,7 +4,6 @@ namespace System\Core;
 
 class App
 {
-
     private static App $instance;
 
     private Loader $loader;
