@@ -68,9 +68,7 @@ abstract class ApiBase
      */
     public function checkMissing(array $params, array $required): array
     {
-        return array_filter($required, function ($v) use ($params) {
-            return !isset($params[$v]);
-        });
+        return array_filter($required, fn ($v) => !isset($params[$v]));
     }
 
     /**

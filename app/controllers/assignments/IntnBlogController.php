@@ -6,7 +6,6 @@ use System\Core\{Controller, Loader};
 
 class IntnBlogController extends Controller
 {
-
     protected $folder = 'assignments/intn-blog';
 
     public function __construct()

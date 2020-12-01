@@ -4,7 +4,6 @@ namespace System\Core;
 
 class App
 {
-
     private static App $instance;
 
     private Loader $loader;
@@ -58,6 +57,11 @@ class App
             http_response_code(404);
             die('<h4>Page not found</h4>');
         }
+    }
+
+    protected function getController(): Controller
+    {
+        return $this->controller;
     }
 
     public function getRequest(): Request

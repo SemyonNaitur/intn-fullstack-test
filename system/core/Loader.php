@@ -68,7 +68,7 @@ class Loader
         $pool = 'dbs';
         $dbs = &$this->pools[$pool];
 
-        $opts = $opts ?? [];
+        $opts ??= [];
 
         if (!in_array(self::NEW_INSTANCE, $opts)) {
             if (isset($dbs[$name])) return $dbs[$name];
@@ -92,15 +92,15 @@ class Loader
         return $instance->init($this->getDefaultDb());
     }
 
-    public function library(string $name, array $args = null, array $opts = null)
+    public function library(string $name, array $args = null, array $opts = null): object
     {
         return $this->loadClass('libraries', $name, $args, $opts);
     }
 
-    public function loadClass(string $pool, string $name, array $args = null, array $opts = null)
+    public function loadClass(string $pool, string $name, array $args = null, array $opts = null): object
     {
-        $opts = $opts ?? [];
-        $args = $args ?? [];
+        $opts ??= [];
+        $args ??= [];
 
         if (!isset($this->pools[$pool])) {
             throw new \Exception("Invalid class type: $pool");
@@ -146,8 +146,8 @@ class Loader
      */
     public function view(string $name, array $data = null, array $opts = null)
     {
-        $data = $data ?? [];
-        $opts = $opts ?? [];
+        $data ??= [];
+        $opts ??= [];
 
         $__args = compact('name', 'data', 'opts');
         unset($name, $data, $opts);
@@ -187,7 +187,7 @@ class Loader
     public function styles($names, array $opts = null)
     {
         if (!is_array($names)) $names = [$names];
-        $opts = $opts ?? [];
+        $opts ??= [];
 
         $styles = '';
 
@@ -229,7 +229,7 @@ class Loader
     public function scripts($names, array $opts = null)
     {
         if (!is_array($names)) $names = [$names];
-        $opts = $opts ?? [];
+        $opts ??= [];
 
         $scripts = '';
 
