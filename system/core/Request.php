@@ -4,7 +4,6 @@ namespace System\Core;
 
 class Request
 {
-
     public static function input(): array
     {
         try {
