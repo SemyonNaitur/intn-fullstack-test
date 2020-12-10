@@ -2,37 +2,23 @@
 
 namespace System\Libraries;
 
-class Logger
+use System\Core\Logger as ILogger;
+
+class Logger implements ILogger
 {
     private static $time_rgx = '/^\[(.+?)\]/';
 
-    /**
-     * 
-     * @param   string $message
-     * @return  void
-     */
-    public static function debug(string $message): void
+    public function debug(string $message): void
     {
-        static::log(__FUNCTION__, $message);
+        $this->log(__FUNCTION__, $message);
     }
 
-    /**
-     * 
-     * @param   string $message
-     * @return  void
-     */
-    public static function error(string $message): void
+    public function error(string $message): void
     {
-        static::log(__FUNCTION__, $message);
+        $this->log(__FUNCTION__, $message);
     }
 
-    /**
-     * 
-     * @param   string  $level
-     * @param   string  $message
-     * @return  void
-     */
-    public static function log(string $level, string $message): void
+    public function log(string $level, string $message): void
     {
         $level = strtoupper($level);
         $format = trim(static::getFormat(), "\n") . "\n";

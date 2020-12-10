@@ -9,6 +9,9 @@ class App
     private Loader $loader;
     private Request $request;
     private Router $router;
+
+    private Logger $logger;
+
     private Controller $controller;
 
     private function __construct()
@@ -27,6 +30,7 @@ class App
         $instance->loader = $loader;
         $instance->request = $request;
         $instance->router = $router;
+        $instance->logger = $loader->library('Logger');
         return $instance;
     }
 
@@ -64,13 +68,33 @@ class App
         return $this->controller;
     }
 
+    public static function request(): Request
+    {
+        return self::$instance->getRequest();
+    }
+
     public function getRequest(): Request
     {
         return $this->request;
     }
 
+    public static function loader(): Loader
+    {
+        return self::$instance->getLoader();
+    }
+
     public function getLoader(): Loader
     {
         return $this->loader;
+    }
+
+    public static function logger(): Logger
+    {
+        return self::$instance->getLogger();
+    }
+
+    public function getLogger(): Logger
+    {
+        return $this->logger;
     }
 }
