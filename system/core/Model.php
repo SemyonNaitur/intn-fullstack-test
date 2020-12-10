@@ -98,9 +98,7 @@ abstract class Model
         $allowed = $allowed ?: array_keys($this->fields);
         return array_filter(
             $record,
-            function ($k) use ($allowed) {
-                return in_array($k, $allowed);
-            },
+            fn ($k) =>  in_array($k, $allowed),
             ARRAY_FILTER_USE_KEY
         );
     }

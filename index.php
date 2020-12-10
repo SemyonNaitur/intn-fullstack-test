@@ -15,7 +15,17 @@ require_once SYS_DIR . '/config.php';
 
 function base_url(): string
 {
-    return System\Core\Request::base();
+    return App::request()::base();
+}
+
+function log_debug(string $message): void
+{
+    App::logger()->debug($message);
+}
+
+function log_error(string $message): void
+{
+    App::logger()->error($message);
 }
 
 function html_title(string $title = null)

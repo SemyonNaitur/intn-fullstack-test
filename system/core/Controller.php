@@ -20,7 +20,7 @@ abstract class Controller
 
     protected function render(array $content, bool $return = false, string $template = null)
     {
-        $template = $template ?? 'main';
+        $template ??= 'main';
         $opts = [Loader::STYLES, Loader::SCRIPTS];
         if ($return) $opts[] = Loader::RETURN;
         $this->load->view($template, $content, $opts);
