@@ -18,11 +18,6 @@ class Loader
     const RETURN = 'return';
 
     /**
-     * Load a stylesheet or script content inline.
-     */
-    const INLINE = 'inline';
-
-    /**
      * Add loaded styles to the data array.
      */
     const STYLES = 'styles';
@@ -34,8 +29,20 @@ class Loader
 
     /**
      * When passed to styles() or scripts(), the names will be treated as external urls.
+     * If INLINE is also passed, an exception will be thrown.
      */
     const EXTERNAL = 'external';
+
+    /**
+     * Load a stylesheet or script content inline.
+     * If passed, external urls are not allowed, passing EXTERNAL will throw an exception.
+     */
+    const INLINE = 'inline';
+
+    /**
+     * Don't throw an exception when a file is missing.
+     */
+    const SILENT = 'silent';
 
     private $pools = [
         'dbs' => [],
@@ -178,6 +185,25 @@ class Loader
         ob_end_flush();
     }
 
+    private static function loadResources($names, string $func, string $inlineFunc, array $opts): string
+    {
+        if (!is_array($names)) $names = [$names];
+        $resources = '';
+
+        if (in_array(self::INLINE, $opts)) {
+            if (in_array(self::EXTERNAL, $opts)) {
+                throw new \Exception("External resources cannot be loaded inline");
+            }
+            $func = $inlineFunc;
+        }
+
+        foreach ($names as $name) {
+            $resources .= self::$func($name, $opts);
+        }
+
+        return $resources;
+    }
+
     /**
      * 
      * @param   string|string[] $names
@@ -186,38 +212,35 @@ class Loader
      */
     public function styles($names, array $opts = null)
     {
-        if (!is_array($names)) $names = [$names];
         $opts ??= [];
-
-        $styles = '';
-
-        if (in_array(self::INLINE, $opts)) {
-            foreach ($names as $name) {
-                if (in_array(self::EXTERNAL, $opts)) {
-                    $file = $name;
-                } else {
-                    $file = sprintf('%s/%s/%s.css', ROOT_DIR, app_config('styles_path'), $name);
-                }
-                if ($content = @file_get_contents($file)) {
-                    $styles .= "<style>\n$content\n</style>\n";
-                }
-            }
-        } else {
-            foreach ($names as $name) {
-                if (in_array(self::EXTERNAL, $opts)) {
-                    $href = $name;
-                } else {
-                    $href = sprintf('%s/%s.css', app_config('styles_path'), $name);
-                }
-                $styles .= "<link rel=\"stylesheet\" href=\"$href\">\n";
-            }
-        }
-
+        $styles = self::loadResources($names, 'addStylesheet', 'loadStylesheetInline', $opts);
         if (in_array(self::RETURN, $opts)) {
             return $styles;
         }
-
         $this->styles .= $styles;
+    }
+
+    private static function addStylesheet(string $name, array $opts): string
+    {
+        if (in_array(self::EXTERNAL, $opts)) {
+            $href = $name;
+        } else {
+            $href = sprintf('%s/%s.css', app_config('styles_path'), $name);
+        }
+        return "<link rel=\"stylesheet\" href=\"$href\">\n";
+    }
+
+    private static function loadStylesheetInline(string $name, array $opts): string
+    {
+        $file = sprintf('%s/%s/%s.css', ROOT_DIR, app_config('styles_path'), $name);
+        if (!file_exists($file)) {
+            if (in_array(self::SILENT, $opts)) {
+                log_debug("Requested stylesheet does not exist: $file");
+                return '';
+            }
+            throw new \Exception("File does not exist: $file");
+        }
+        return "<style>\n" . file_get_contents($file) . "\n</style>\n";
     }
 
     /**
@@ -228,38 +251,35 @@ class Loader
      */
     public function scripts($names, array $opts = null)
     {
-        if (!is_array($names)) $names = [$names];
         $opts ??= [];
-
-        $scripts = '';
-
-        if (in_array(self::INLINE, $opts)) {
-            foreach ($names as $name) {
-                if (in_array(self::EXTERNAL, $opts)) {
-                    $file = $name;
-                } else {
-                    $file = sprintf('%s/%s/%s.js', ROOT_DIR, app_config('js_path'), $name);
-                }
-                if ($content = @file_get_contents($file)) {
-                    $scripts .= "<script>\n$content\n</script>\n";
-                }
-            }
-        } else {
-            foreach ($names as $name) {
-                if (in_array(self::EXTERNAL, $opts)) {
-                    $src = $name;
-                } else {
-                    $src = sprintf('%s/%s.js', app_config('js_path'), $name);
-                }
-                $scripts .= "<script src=\"$src\"></script>\n";
-            }
-        }
-
+        $scripts = self::loadResources($names, 'addScript', 'loadScriptInline', $opts);
         if (in_array(self::RETURN, $opts)) {
             return $scripts;
         }
-
         $this->scripts .= $scripts;
+    }
+
+    private static function addScript(string $name, array $opts): string
+    {
+        if (in_array(self::EXTERNAL, $opts)) {
+            $src = $name;
+        } else {
+            $src = sprintf('%s/%s.js', app_config('js_path'), $name);
+        }
+        return "<script src=\"$src\"></script>\n";
+    }
+
+    private static function loadScriptInline(string $name, array $opts): string
+    {
+        $file = sprintf('%s/%s/%s.js', ROOT_DIR, app_config('js_path'), $name);
+        if (!file_exists($file)) {
+            if (in_array(self::SILENT, $opts)) {
+                log_debug("Requested script does not exist: $file");
+                return '';
+            }
+            throw new \Exception("File does not exist: $file");
+        }
+        return "<script>\n" . file_get_contents($file) . "\n</script>\n";
     }
 
     public function getDefaultDb(): ?Db
