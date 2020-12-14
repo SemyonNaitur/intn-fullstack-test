@@ -15,8 +15,8 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
 
-    <link rel="stylesheet" href="app/styles/font-awesome-4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="app/styles/main.css">
+    <link rel="stylesheet" href="<?= app_config('styles_path') ?>/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="<?= app_config('styles_path') ?>/main.css">
 
     <?= @$__styles ?>
 
@@ -36,7 +36,7 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-    <script src="js/lib.js"></script>
+    <script src="<?= app_config('js_path') ?>/lib.js"></script>
 
     <script>
         const APP_CONFIG = JSON.parse('<?= json_encode(js_config()) ?>');

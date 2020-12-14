@@ -5,7 +5,7 @@ RewriteEngine On
 Options All -Indexes
 
 # Deny access to listing directory
-RewriteRule ^(application|system) - [F,L]
+RewriteRule ^(app|system) - [F,L]
 
 # Check if file or directory exist
 RewriteCond %{REQUEST_FILENAME} !-f
