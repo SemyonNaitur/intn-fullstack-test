@@ -17,9 +17,9 @@ function app_config(string $property = '', $value = null)
         'controllers_path'  => APP_PATH . '/controllers',
         'models_path'       => APP_PATH . '/models',
         'views_path'        => APP_PATH . '/views',
-        'styles_path'       => APP_PATH . '/styles',
-        'js_path'           => APP_PATH . '/js',
         'libraries_path'    => APP_PATH . '/libraries',
+        'styles_path'       => 'styles',
+        'js_path'           => 'js',
         //--- /app file structure ---//
     ];
 
