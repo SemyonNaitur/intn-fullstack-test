@@ -14,12 +14,19 @@ class RouterTestController extends Controller
     {
         echo '<pre>';
         if ($data['print_args']) {
+            echo "url params:\n";
             print_r($params);
+            echo "route data:\n";
             print_r($data);
         }
+        echo "GET:\n";
         print_r($_GET);
+        echo "SERVER:\n";
         print_r($_SERVER);
+        echo "getenv()\n";
+        print_r(getenv());
         echo '</pre>';
+        phpinfo();
     }
 
     public function catIdProp(?array $params, ?array $data)
