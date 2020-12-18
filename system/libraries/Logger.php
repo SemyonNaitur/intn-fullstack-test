@@ -35,7 +35,6 @@ class Logger implements ILogger
                 $line = preg_replace(self::$time_rgx, '[' . app_config('app_name') . ']', $line);
                 error_log($line);
             }
-            throw $e;
         }
     }
 

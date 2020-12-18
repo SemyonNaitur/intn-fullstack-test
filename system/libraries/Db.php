@@ -31,7 +31,7 @@ class Db
 				$this->setPdo(self::pdo($cfg));
 			} catch (\PDOException $e) {
 				$this->exception($e);
-				log_debug(print_r($config));
+				log_debug(print_r($config, 1));
 				throw new \Exception("DB connection failed");
 			}
 		} else {
