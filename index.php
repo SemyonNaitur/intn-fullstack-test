@@ -20,6 +20,7 @@ function base_url(): string
 
 function log_debug(string $message): void
 {
+    if (!app_config('debug')) return;
     App::logger()->debug($message);
 }
 

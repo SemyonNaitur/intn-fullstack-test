@@ -31,6 +31,8 @@ class Db
 				$this->setPdo(self::pdo($cfg));
 			} catch (\PDOException $e) {
 				$this->exception($e);
+				log_debug(print_r($config));
+				throw new \Exception("DB connection failed");
 			}
 		} else {
 			throw new \Exception('Invalid config array!');
@@ -49,8 +51,10 @@ class Db
 
 	public function exception($e)
 	{
+		$err = $e->getMessage();
+		log_error("DB exception: $err");
 		if ($e instanceof \PDOException) {
-			return ['error' => (app_config('debug')) ? $e->getMessage() : 'DB Error.'];
+			return ['error' => (app_config('debug')) ? $err : 'DB Error.'];
 		}
 		throw $e;
 	}
