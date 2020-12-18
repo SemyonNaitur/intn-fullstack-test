@@ -14,17 +14,15 @@ class RouterTestController extends Controller
     {
         echo '<pre>';
         if ($data['print_args']) {
-            echo "url params:\n";
+            echo "\nurl params:\n";
             print_r($params);
-            echo "route data:\n";
+            echo "\nroute data:\n";
             print_r($data);
         }
-        echo "GET:\n";
+        echo "\nGET:\n";
         print_r($_GET);
-        echo "SERVER:\n";
+        echo "\nSERVER:\n";
         print_r($_SERVER);
-        echo "getenv()\n";
-        print_r(getenv());
         echo '</pre>';
         phpinfo();
     }
