@@ -20,9 +20,8 @@ class Logger implements ILogger
 
     public function log(string $level, string $message): void
     {
-        $level = strtoupper($level);
         $format = trim(static::getFormat(), "\n") . "\n";
-        $line = strtr($format, ['{level}' => $level, '{message}' => $message]);
+        $line = strtr($format, ['{level}' => strtoupper($level), '{message}' => $message]);
         $dir = app_config('log_dir');
         try {
             $name = app_config('app_name') . '_log.txt';
@@ -31,10 +30,8 @@ class Logger implements ILogger
             fwrite($fh, $line);
             fclose($fh);
         } catch (\Throwable $e) {
-            if ($level == 'ERROR') {
-                $line = preg_replace(self::$time_rgx, '[' . app_config('app_name') . ']', $line);
-                error_log($line);
-            }
+            $line = preg_replace(self::$time_rgx, '[' . app_config('app_name') . ']', $line);
+            error_log($line);
         }
     }
 
