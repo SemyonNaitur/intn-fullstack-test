@@ -24,13 +24,14 @@ class ApiController extends Controller
 
     public function intnBlog(?array $params, ?array $data)
     {
+        $folder = 'assignments/IntnBlog';
         $args = [
             $this->request->input(),
             $this->db,
             $this->load->library('Curl'),
             $this->load->library('Validator', [$this->db]),
-            $this->load->model('User'),
-            $this->load->model('Post'),
+            $this->load->model("$folder/User"),
+            $this->load->model("$folder/Post"),
         ];
         $api = $this->load->library('api/IntnBlog', $args);
         $api->run();
