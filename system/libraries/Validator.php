@@ -2,6 +2,8 @@
 
 namespace System\Libraries;
 
+use System\Core\App;
+
 class Validator
 {
     protected ?Db $db = null;
@@ -10,7 +12,7 @@ class Validator
 
     public function __construct(Db $db = null)
     {
-        $this->setDb($db);
+        $this->setDb($db ?? default_db());
     }
 
     /**
