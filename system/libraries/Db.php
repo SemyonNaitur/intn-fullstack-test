@@ -53,9 +53,9 @@ class Db
 	{
 		$err = $e->getMessage();
 		log_error("DB exception: $err");
-		if ($e instanceof \PDOException) {
-			return ['error' => (app_config('debug')) ? $err : 'DB Error.'];
-		}
+		// if ($e instanceof \PDOException) {
+		// 	return ['error' => (app_config('debug')) ? $err : 'DB Error.'];
+		// }
 		throw $e;
 	}
 
