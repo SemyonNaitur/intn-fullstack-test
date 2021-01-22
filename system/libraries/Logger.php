@@ -30,8 +30,10 @@ class Logger implements ILogger
             fwrite($fh, $line);
             fclose($fh);
         } catch (\Throwable $e) {
-            $line = preg_replace(self::$time_rgx, '[' . app_config('app_name') . ']', $line);
-            error_log($line);
+            if ($level == 'ERROR' || app_config('debug')) {
+                $line = preg_replace(self::$time_rgx, '[' . app_config('app_name') . ']', $line);
+                error_log($line);
+            }
         }
     }
 
