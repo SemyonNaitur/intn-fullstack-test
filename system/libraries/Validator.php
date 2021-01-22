@@ -130,6 +130,11 @@ class Validator
         return ((int) $val == $val) ?: '%s be an integer.';
     }
 
+    public static function url_rule($val)
+    {
+        return (bool) filter_var($val, FILTER_VALIDATE_URL) ?: 'Invalid %s.';
+    }
+
     public static function email_rule($val)
     {
         return (bool) filter_var($val, FILTER_VALIDATE_EMAIL) ?: 'Invalid %s address.';
