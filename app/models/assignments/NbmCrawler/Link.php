@@ -55,7 +55,7 @@ class Link extends Model
             $pdo = $this->db->getPdo();
             $tbl = $this->table;
 
-            $sql = "SELECT site_url FROM $tbl";
+            $sql = "SELECT DISTINCT site_url FROM $tbl";
             return $pdo->query($sql)->fetchAll(\PDO::FETCH_COLUMN);
         } catch (\PDOException $e) {
             $this->db->exception($e);
