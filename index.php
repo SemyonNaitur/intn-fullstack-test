@@ -8,6 +8,8 @@ define('SYS_DIR', ROOT_DIR . '/system');
 require_once SYS_DIR . '/config.php';
 require_once SYS_DIR . '/app_helper.php';
 
+header("Access-Control-Allow-Origin: *");
+
 (App::bootstrap(
     new Loader(),
     new Request(),
