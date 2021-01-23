@@ -62,12 +62,18 @@ class NbmCrawler extends ApiBase
 			$this->site_data['base_url'] = ($data['scheme'] ?? 'http') . '://' . $data['host'];
 			$this->paths['existing'] = $this->link->getBySite($site);
 			$this->recursion = 0;
-			set_time_limit(600);
-			$this->scrape();
-		}
-		$data = $this->paths;
+			$this->setTimeLimit();
 
-		($err) ? $this->error($err) : $this->success($data);
+			$start_time = microtime(true);
+			$this->scrape();
+			$end_time = microtime(true);
+
+			$data = $this->paths;
+			$data['execution_time'] = date('i:m', $end_time - $start_time);
+			$this->success($data);
+		}
+
+		$this->error($err);
 	}
 
 	public function getSites(array $params)
@@ -102,59 +108,79 @@ class NbmCrawler extends ApiBase
 
 	protected function scrape(string $path = '')
 	{
-		$path = trim($path, '/');
+		$path = '/' . trim($path, '/');
 		if (in_array($path, $this->paths['scraped'])) return;
 
 		$base_url = $this->site_data['base_url'];
-		$url = $base_url . '/' . $path;
+		$url = $base_url . $path;
 		$content_type = $this->getContentType($url);
 
 		if (
 			$this->isAllowedContentType($content_type)
 			&& $html = $this->getHtml($url)
 		) {
-			foreach ($html->find('a') as $a) {
-				$link_data = parse_url($a->href);
+			$this->paths['scraped'][] = $path;
 
-				if (!empty($link_data['host'])) {
-					if (
-						$link_data['host'] != $this->site_data['host'] // external
-						|| !$this->isAllowedScheme($link_data['scheme'] ?? '')
-					) continue;
+			foreach ($html->find('a') as $a) {
+				if (!$a->href) continue;
+				$link_data = parse_url($a->href);
+				log_debug(str_repeat("\t", $this->recursion) . "parsed: $a->href");
+				if (!$this->isValidLink($link_data)) continue;
+
+				$link_path = $this->extractPath($link_data);
+				if (in_array($link_path, $this->paths['scraped'])) continue;
+
+				$link_url = $base_url . $link_path;
+				if ($this->curl->getStatus($link_url) != 200) continue;
+
+				if (!$this->isDuplicate($link_path)) {
+					$this->insertPath($link_path);
 				}
 
-				$link_path = ($link_data['path'] ?? '') ?: '/';
-				if ($link_path != '/') {
-
-					$link_url = $base_url . $link_path;
-					if ($this->curl->getStatus($link_url) == 200) {
-
-						if (!$this->isDuplicate($link_path)) {
-							$this->insertPath($link_path);
-						}
-
-						if ($this->recursion < $this->opts['max_recursion']) {
-							$this->recursion++;
-							$this->scrape($link_path);
-							$this->recursion--;
-						}
-					}
+				if ($this->recursion < $this->opts['max_recursion']) {
+					$this->recursion++;
+					$this->scrape($link_path);
+					$this->recursion--;
 				}
 			}
 		}
-
-		$this->paths['scraped'][] = $path;
 	}
 
 	protected function getHtml($url)
 	{
 		try {
 			$html = file_get_html($url);
-			log_debug(str_repeat("\t", $this->recursion) . "$url: fetched");
+			log_debug(str_repeat("\t", $this->recursion) . "fetched: $url ");
 			return $html;
 		} catch (\Throwable $e) {
 			return null;
 		}
+	}
+
+	protected function isValidLink($link)
+	{
+		$link_data = (is_array($link)) ? $link : parse_url($link);
+
+		if (!empty($link_data['host'])) {
+			if (
+				$link_data['host'] != $this->site_data['host'] // external
+				|| !$this->isAllowedScheme($link_data['scheme'] ?? '')
+			) return false;
+		}
+
+		return true;
+	}
+
+	protected function extractPath($link, $query_string = true)
+	{
+		$link_data = (is_array($link)) ? $link : parse_url($link);
+
+		$link_path = $link_data['path'] ?? '';
+		$link_path = '/' . trim($link_path, '/');
+		if ($query_string && !empty($link_data['query'])) {
+			$link_path .= "?$link_data[query]";
+		}
+		return $link_path;
 	}
 
 	protected function getContentType(string $url)
@@ -186,6 +212,17 @@ class NbmCrawler extends ApiBase
 			'linkPath' =>  $path,
 		]);
 		$this->paths['inserted'][] = $path;
-		log_debug(str_repeat("\t", $this->recursion) . "$path: inserted");
+		log_debug(str_repeat("\t", $this->recursion) . "inserted: $path");
+	}
+
+	protected function setTimeLimit()
+	{
+		if (getenv('APP_ENVIRONMENT') === 'production') {
+			if ($limit = getenv('APP_CRAWLER_TIME_LIMIT')) {
+				set_time_limit($limit);
+			}
+		} else {
+			set_time_limit(3600);
+		}
 	}
 }
