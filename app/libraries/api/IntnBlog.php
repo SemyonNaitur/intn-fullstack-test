@@ -5,7 +5,7 @@ namespace App\Libraries\Api;
 use System\Libraries\{Db, Validator, Curl};
 use System\Libraries\Api\ApiBase;
 
-use App\Models\{User, Post};
+use App\Models\Assignments\IntnBlog\{User, Post};
 
 class IntnBlog extends ApiBase
 {

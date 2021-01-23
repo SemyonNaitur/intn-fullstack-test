@@ -6,7 +6,7 @@ use System\Core\{Controller, Loader};
 
 class IntnBlogController extends Controller
 {
-    protected $folder = 'assignments/intn-blog';
+    protected $folder = 'assignments/IntnBlog';
 
     public function __construct()
     {
@@ -65,7 +65,7 @@ class IntnBlogController extends Controller
             $by = str_replace('_', ' ', $by);
             $by = str_replace(' ', '', ucfirst($by));
 
-            $post = $this->load->model('Post');
+            $post = $this->load->model("$this->folder/Post");
             $res = $post->{"searchBy$by"}($param);
             if ($res['error']) {
                 $data = $res;

@@ -2,6 +2,8 @@
 
 namespace System\Libraries;
 
+use System\Core\App;
+
 class Validator
 {
     protected ?Db $db = null;
@@ -10,7 +12,7 @@ class Validator
 
     public function __construct(Db $db = null)
     {
-        $this->setDb($db);
+        $this->setDb($db ?? default_db());
     }
 
     /**
@@ -126,6 +128,11 @@ class Validator
     public static function integer_rule($val)
     {
         return ((int) $val == $val) ?: '%s be an integer.';
+    }
+
+    public static function url_rule($val)
+    {
+        return (bool) filter_var($val, FILTER_VALIDATE_URL) ?: 'Invalid %s.';
     }
 
     public static function email_rule($val)

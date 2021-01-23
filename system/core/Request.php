@@ -41,7 +41,7 @@ class Request
     public static function uri(): string
     {
         $q = (empty($_SERVER['QUERY_STRING'])) ? '' : "?$_SERVER[QUERY_STRING]";
-        return $_SERVER['PATH_INFO'] . $q;
+        return self::pathInfo() . $q;
     }
 
     /**
@@ -55,7 +55,7 @@ class Request
 
     public static function pathInfo(): string
     {
-        return $_SERVER['PATH_INFO'];
+        return $_SERVER['PATH_INFO'] ?? '';
     }
 
     public static function clientIp(): string

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Assignments\IntnBlog;
 
 use System\Core\Model;
 
