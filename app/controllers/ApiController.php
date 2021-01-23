@@ -12,6 +12,8 @@ class ApiController extends Controller
             switch ($params['name']) {
                 case 'intn-blog':
                     return $this->intnBlog($params, $data);
+                case 'nbm-crawler':
+                    return $this->nbmCrawler($params, $data);
             }
         } catch (\Throwable $e) {
             if (app_config('debug')) {
@@ -29,11 +31,25 @@ class ApiController extends Controller
             $this->request->input(),
             $this->db,
             $this->load->library('Curl'),
-            $this->load->library('Validator', [$this->db]),
+            $this->load->library('Validator'),
             $this->load->model("$folder/User"),
             $this->load->model("$folder/Post"),
         ];
         $api = $this->load->library('api/IntnBlog', $args);
+        $api->run();
+    }
+
+    public function nbmCrawler(?array $params, ?array $data)
+    {
+        $folder = 'assignments/NbmCrawler';
+        $args = [
+            $this->request->input(),
+            $this->db,
+            $this->load->library('Curl'),
+            $this->load->library('Validator'),
+            $this->load->model("$folder/Link"),
+        ];
+        $api = $this->load->library('api/NbmCrawler', $args);
         $api->run();
     }
 }
