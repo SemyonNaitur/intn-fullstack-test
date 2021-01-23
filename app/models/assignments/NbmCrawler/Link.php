@@ -4,6 +4,17 @@ namespace App\Models\Assignments\NbmCrawler;
 
 use System\Core\Model;
 
+/*
+CREATE TABLE `nbm_links` (
+ `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+ `site_url` varchar(100) NOT NULL,
+ `link_path` varchar(100) NOT NULL,
+ `updated_at` timestamp NULL DEFAULT NULL,
+ `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+ PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4
+*/
+
 class Link extends Model
 {
     protected $table = 'nbm_links';
