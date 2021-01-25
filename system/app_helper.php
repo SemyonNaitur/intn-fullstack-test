@@ -3,6 +3,13 @@
 use System\Core\App;
 use System\Libraries\Db;
 
+function app_getenv(string $varname, bool $local_only = false)
+{
+    if (isset($_ENV[$varname])) return $_ENV[$varname];
+    $value = getenv($varname, $local_only);
+    return ($value === false) ? null : $value;
+}
+
 function html_title(string $title = null)
 {
     static $html_title = '';

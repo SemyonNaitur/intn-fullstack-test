@@ -7,6 +7,12 @@ define('APP_DIR', ROOT_DIR . '/' . APP_PATH);
 //--- /file structure ---//
 
 
+if (file_exists(ROOT_DIR . '/site.inc')) {
+    require_once ROOT_DIR . '/site.inc';
+}
+require_once SYS_DIR . '/app_helper.php';
+
+
 //--- app config ---//
 function app_config(string $property = '', $value = null)
 {

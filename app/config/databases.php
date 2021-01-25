@@ -2,9 +2,9 @@
 
 app_config('db', [
     'default' => [
-        'host' => getenv('DB_HOST') ?: 'localhost',
-        'dbname' => 'mvc_sandbox',
-        'user' => getenv('DB_USERNAME') ?: 'root',
-        'pass' => getenv('DB_PASSWORD') ?: ''
+        'host' => app_getenv('DB_HOST') ?? 'localhost',
+        'dbname' => app_getenv('DB_NAME') ?? 'mvc_sandbox',
+        'user' => app_getenv('DB_USERNAME') ?? 'root',
+        'pass' => app_getenv('DB_PASSWORD') ?? ''
     ],
 ]);
