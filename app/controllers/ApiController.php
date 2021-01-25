@@ -26,7 +26,7 @@ class ApiController extends Controller
 
     public function intnBlog(?array $params, ?array $data)
     {
-        $folder = 'assignments/IntnBlog';
+        $folder = 'IntnBlog';
         $args = [
             $this->request->input(),
             $this->db,
@@ -41,7 +41,7 @@ class ApiController extends Controller
 
     public function nbmCrawler(?array $params, ?array $data)
     {
-        $folder = 'assignments/NbmCrawler';
+        $folder = 'NbmCrawler';
         $args = [
             $this->request->input(),
             $this->db,

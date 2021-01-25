@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Assignments\NbmCrawler;
+namespace App\Models\NbmCrawler;
 
 use System\Core\Model;
 

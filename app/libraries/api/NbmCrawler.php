@@ -7,7 +7,7 @@ require_once app_config('libraries_path') . '/external/simplehtmldom_1_9_1/simpl
 use System\Libraries\{Db, Validator, Curl};
 use System\Libraries\Api\ApiBase;
 
-use App\Models\Assignments\NbmCrawler\Link;
+use App\Models\NbmCrawler\Link;
 
 class NbmCrawler extends ApiBase
 {

@@ -216,7 +216,7 @@ $(function () {
 	const $searchBy = $postsContent.find('[data-field="search-by"]');
 	const $searchParam = $postsContent.find('[data-field="search-param"]');
 	$postsContent.find('[data-action="search"]').click(() => {
-		const url = `assignments/intn-blog/posts-json/?${$searchBy.val()}=${$searchParam.val()}`;
+		const url = `intn-blog/posts-json/?${$searchBy.val()}=${$searchParam.val()}`;
 		window.open(url, '_blank');
 	});
 

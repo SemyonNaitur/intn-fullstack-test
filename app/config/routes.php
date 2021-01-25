@@ -1,8 +1,8 @@
 <?php
 
 $rtc = 'test/RouterTest';
-$ibp = 'assignments/intn-blog';
-$ibc = 'assignments/IntnBlog';
+$ibp = 'intn-blog';
+$ibc = 'IntnBlog';
 $api = 'ApiController';
 
 app_config('routes', [

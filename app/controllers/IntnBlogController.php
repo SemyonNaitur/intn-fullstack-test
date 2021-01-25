@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Controllers\Assignments;
+namespace App\Controllers;
 
 use System\Core\{Controller, Loader};
 
 class IntnBlogController extends Controller
 {
-    protected $folder = 'assignments/IntnBlog';
+    protected $folder = 'IntnBlog';
 
     public function __construct()
     {

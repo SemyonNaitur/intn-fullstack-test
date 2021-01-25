@@ -33,7 +33,7 @@ if (!empty($page)) {
         <ul class="navbar-nav mr-auto">
             <?php foreach ($top_nav as $data) { ?>
                 <li class="nav-item <?= $data['active'] ?>">
-                    <a class="nav-link" href="assignments/intn-blog/<?= $data['name'] ?>"><?= $data['text'] ?></a>
+                    <a class="nav-link" href="intn-blog/<?= $data['name'] ?>"><?= $data['text'] ?></a>
                 </li>
             <?php } ?>
         </ul>
