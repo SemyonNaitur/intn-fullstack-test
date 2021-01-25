@@ -2,7 +2,7 @@
 
 namespace System\Libraries;
 
-use System\Core\Logger as ILogger;
+use System\Core\ILogger;
 
 class Logger implements ILogger
 {

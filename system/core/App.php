@@ -10,7 +10,7 @@ class App
     private Request $request;
     private Router $router;
 
-    private Logger $logger;
+    private ILogger $logger;
 
     private Controller $controller;
 
@@ -88,12 +88,12 @@ class App
         return $this->loader;
     }
 
-    public static function logger(): Logger
+    public static function logger(): ILogger
     {
         return self::$instance->getLogger();
     }
 
-    public function getLogger(): Logger
+    public function getLogger(): ILogger
     {
         return $this->logger;
     }

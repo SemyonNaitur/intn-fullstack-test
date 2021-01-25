@@ -2,7 +2,7 @@
 
 namespace System\Core;
 
-interface Logger
+interface ILogger
 {
     public function debug(string $message): void;
 
