@@ -2,6 +2,8 @@
 
 namespace System\Libraries;
 
+use System\Exceptions\DbException;
+
 class Db
 {
 	protected $db_config = [
@@ -29,13 +31,11 @@ class Db
 
 			try {
 				$this->setPdo(self::pdo($cfg));
-			} catch (\PDOException $e) {
+			} catch (\Throwable $e) {
 				$this->exception($e);
-				log_debug(print_r($config, 1));
-				throw new \Exception("DB connection failed");
 			}
 		} else {
-			throw new \Exception('Invalid config array!');
+			throw new \InvalidArgumentException('Invalid config array');
 		}
 	}
 
@@ -51,11 +51,9 @@ class Db
 
 	public function exception($e)
 	{
-		$err = $e->getMessage();
-		log_error("DB exception: $err");
-		// if ($e instanceof \PDOException) {
-		// 	return ['error' => (app_config('debug')) ? $err : 'DB Error.'];
-		// }
+		if ($e instanceof \PDOException) {
+			$e = new DbException($e->getMessage(), 0, $e);
+		}
 		throw $e;
 	}
 
